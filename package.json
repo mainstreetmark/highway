@@ -1,0 +1,29 @@
+{
+  "name": "highway",
+  "version": "0.1.0",
+  "description": "Web sockets and HTTP access to mongo",
+  "main": "highway.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/krewenki/highway.git"
+  },
+  "keywords": [
+    "websockets",
+    "http",
+    "mongodb"
+  ],
+  "author": "Warren Krewenki",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/krewenki/highway/issues"
+  },
+  "homepage": "https://github.com/krewenki/highway#readme",
+  "dependencies": {
+    "mongodb": "^2.1.7",
+    "mongojs": "^2.3.0",
+    "underscore": "^1.8.3"
+  }
+}
