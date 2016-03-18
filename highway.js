@@ -3,9 +3,8 @@ var Highway = function(settings){
 	var mongojs = require('mongojs');
 	var ObjectId = require('mongojs').ObjectId;
 	var _ = require('underscore');
-
-	var io = settings.io;
 	var self = this;
+	self.io = settings.io;
 	self.sockets = {};
 	
 	MongoClient.connect(settings.uri+'/'+settings.database, listCollectionsCallback)
@@ -44,6 +43,10 @@ var Highway = function(settings){
 	}
 
 	function SetUpSockets(collection){
+		if(!settings.io){
+			console.log('no io provided, aborting sockets');
+			return false;
+		}
 		self.sockets[collection].on('connection', function(socket){
 			socket.on('init', function(search){
 				fetchAllRecords(collection, search, function(err, docs){ socket.emit('all_records', docs); });
@@ -93,7 +96,7 @@ var Highway = function(settings){
 		collections = collections.map(function(m){ return m.trim().toString(); })
 		while( (collection = collections.pop()) !== undefined){
 			if(collection != '' && collection != 'system.indexes'){
-				self.sockets[collection] = io.of('/'+settings.database+'/'+collection);
+				self.sockets[collection] = self.io.of('/'+settings.database+'/'+collection);
 				SetUpSockets(collection);
 				SetUpREST(collection);
 			}
