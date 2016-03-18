@@ -22,6 +22,7 @@
   },
   "homepage": "https://github.com/krewenki/highway#readme",
   "dependencies": {
+    "connect-mongo": "^1.1.0",
     "mongodb": "^2.1.7",
     "mongojs": "^2.3.0",
     "passport": "^0.3.2",

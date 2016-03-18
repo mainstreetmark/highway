@@ -3,9 +3,22 @@ var Highway = function(settings){
 	var mongojs = require('mongojs');
 	var ObjectId = require('mongojs').ObjectId;
 	var _ = require('underscore');
+	
+	var defaults = {
+		io: false,
+		http: false,
+		uri: false,
+		database: false,
+		auth: false
+	}
+	
 	var self = this;
-	self.io = settings.io;
+	self.settings = _.defaults(settings, defaults);
+	self.io = self.settings.io;
 	self.sockets = {};
+	
+	
+	
 	
 	MongoClient.connect(settings.uri+'/'+settings.database, listCollectionsCallback)
 	
@@ -106,6 +119,22 @@ var Highway = function(settings){
 	function listCollectionsCallback(err, db) {
 		self.db = mongojs(db, [])
 		self.db.getCollectionNames(collectionList);
+	}
+	
+	function handleAuthentication(){
+		
+		var passport = require('passport');
+		
+		self.settings.http.use(session({
+		  cookie : {
+		    maxAge: 3600000 
+		  },
+		  store : new MongoStore()
+		});
+
+		app.use(passport.session());
+		
+		
 	}
 
 	return self;	
