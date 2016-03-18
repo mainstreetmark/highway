@@ -24,6 +24,7 @@
   "dependencies": {
     "mongodb": "^2.1.7",
     "mongojs": "^2.3.0",
+    "passport": "^0.3.2",
     "underscore": "^1.8.3"
   }
 }

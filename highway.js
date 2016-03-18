@@ -1,10 +1,9 @@
-var mongodb = require('mongodb');
-var MongoClient = require('mongodb').MongoClient;
-var mongojs = require('mongojs');
-var ObjectId = require('mongojs').ObjectId;
-var _ = require('underscore');
-
 var Highway = function(settings){
+	var MongoClient = require('mongodb').MongoClient;
+	var mongojs = require('mongojs');
+	var ObjectId = require('mongojs').ObjectId;
+	var _ = require('underscore');
+
 	var io = settings.io;
 	var self = this;
 	self.sockets = {};
