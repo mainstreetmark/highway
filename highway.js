@@ -117,22 +117,36 @@ var Highway = function(settings){
 	}
 
 	function listCollectionsCallback(err, db) {
+		if(err){ return err; }
 		self.db = mongojs(db, [])
+		handleAuthentication();
 		self.db.getCollectionNames(collectionList);
 	}
 	
 	function handleAuthentication(){
 		
 		var passport = require('passport');
-		
-		self.settings.http.use(session({
-		  cookie : {
-		    maxAge: 3600000 
-		  },
-		  store : new MongoStore()
-		});
+		var session    = require('express-session');
+		var MongoStore = require('connect-mongostore')(session);
+		var passportSocketIo = require('passport.socketio');
+		var secret = self.settings.auth_secret || 'highwaysecret';
 
-		app.use(passport.session());
+		self.settings.http.use(session({
+			secret: secret,
+			store: 
+		}));
+		self.settings.http.use(passport.session());
+		
+		
+		self.settings.io.use(passportSocketIo.authorize({
+		  cookieParser: cookieParser,       // the same middleware you registrer in express
+		  key:          'express.sid',       // the name of the cookie where express/connect stores its session_id
+		  secret:       secret,    // the session_secret to parse the cookie
+		  store:  new MongoStore({'db': 'sessions'}),        // we NEED to use a sessionstore. no memorystore please
+		 // success:      onAuthorizeSuccess,  // *optional* callback on success - read more below
+		 // fail:         onAuthorizeFail,     // *optional* callback on fail/error - read more below
+		}));
+		
 		
 		
 	}
