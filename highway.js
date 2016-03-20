@@ -18,8 +18,6 @@ var Highway = function(settings){
 	self.sockets = {};
 	
 	
-	
-	
 	MongoClient.connect(settings.uri+'/'+settings.database, listCollectionsCallback)
 	
 	function SetUpREST(collection, sockets){
@@ -138,14 +136,21 @@ var Highway = function(settings){
 		self.settings.http.use(passport.session());
 		
 		
-		self.settings.io.use(passportSocketIo.authorize({
-		  cookieParser: cookieParser,       // the same middleware you registrer in express
-		  key:          'express.sid',       // the name of the cookie where express/connect stores its session_id
-		  secret:       secret,    // the session_secret to parse the cookie
-		  store:  new MongoStore({'db': 'sessions'}),        // we NEED to use a sessionstore. no memorystore please
+		//self.settings.io.use(passportSocketIo.authorize({
+		//  cookieParser: cookieParser,       // the same middleware you registrer in express
+		//  key:          'express.sid',       // the name of the cookie where express/connect stores its session_id
+		//  secret:       secret,    // the session_secret to parse the cookie
+		//  store:  new MongoStore({'db': 'sessions'}),        // we NEED to use a sessionstore. no memorystore please
 		 // success:      onAuthorizeSuccess,  // *optional* callback on success - read more below
 		 // fail:         onAuthorizeFail,     // *optional* callback on fail/error - read more below
-		}));
+			//}));
+			
+		self.settings.http.post('/login',
+		  passport.authenticate('local', { 
+			  successRedirect: '/',
+			  failureRedirect: '/login' 
+		  })
+	  	);
 		
 		
 		
