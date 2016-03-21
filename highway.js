@@ -4,6 +4,7 @@ var Highway = function(settings){
 	var ObjectId = require('mongojs').ObjectId;
 	var _ = require('underscore');
 	var express = require('express');
+	var bodyParser = require('body-parser');
 	
 	var defaults = {
 		io: false,
@@ -106,6 +107,7 @@ var Highway = function(settings){
 	
 	function collectionList(err, collections){
 		collections = collections.map(function(m){ return m.trim().toString(); })
+		self.settings.http.use(bodyParser.json());
 		self.router = express.router();
 		while( (collection = collections.pop()) !== undefined){
 			if(collection != '' && collection != 'system.indexes'){
@@ -136,7 +138,7 @@ var Highway = function(settings){
 			secret: secret,
 			store: new MongoStore({'db': 'sessions'}),
 			resave: true,
-			saveUninitialize: true
+			saveUninitialized: true
 		}));
 		self.settings.http.use(passport.session());
 		
