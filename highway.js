@@ -3,6 +3,7 @@ var Highway = function(settings){
 	var mongojs = require('mongojs');
 	var ObjectId = require('mongojs').ObjectId;
 	var _ = require('underscore');
+	var express = require('express');
 	
 	var defaults = {
 		io: false,
@@ -21,11 +22,11 @@ var Highway = function(settings){
 	MongoClient.connect(settings.uri+'/'+settings.database, listCollectionsCallback)
 	
 	function SetUpREST(collection, sockets){
-		if(!settings.router){
-			console.log('no router provided, aborting rest routes');
+		if(!settings.http){
+			console.log('no http provided, aborting rest routes');
 			return false;
 		}
-		router = settings.router;
+		router = self.router;
 		
 		router.route('/'+settings.database+'/'+collection)
 	    .get(function(req, res){
@@ -105,6 +106,7 @@ var Highway = function(settings){
 	
 	function collectionList(err, collections){
 		collections = collections.map(function(m){ return m.trim().toString(); })
+		self.router = express.router();
 		while( (collection = collections.pop()) !== undefined){
 			if(collection != '' && collection != 'system.indexes'){
 				self.sockets[collection] = self.io.of('/'+settings.database+'/'+collection);
@@ -112,6 +114,7 @@ var Highway = function(settings){
 				SetUpREST(collection);
 			}
 		}
+		self.settings.http.use(self.router);
 	}
 
 	function listCollectionsCallback(err, db) {
