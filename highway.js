@@ -108,7 +108,7 @@ var Highway = function(settings){
 	function collectionList(err, collections){
 		collections = collections.map(function(m){ return m.trim().toString(); })
 		self.settings.http.use(bodyParser.json());
-		self.router = express.router();
+		self.router = express.Router();
 		while( (collection = collections.pop()) !== undefined){
 			if(collection != '' && collection != 'system.indexes'){
 				self.sockets[collection] = self.io.of('/'+settings.database+'/'+collection);
@@ -116,7 +116,7 @@ var Highway = function(settings){
 				SetUpREST(collection);
 			}
 		}
-		self.settings.http.use(self.router);
+		self.settings.http.use('/', self.router);
 	}
 
 	function listCollectionsCallback(err, db) {
