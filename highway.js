@@ -131,7 +131,7 @@ var Highway = function(settings){
 
 		self.settings.http.use(session({
 			secret: secret,
-			store: 
+			store: new MongoStore({'db': 'sessions'})
 		}));
 		self.settings.http.use(passport.session());
 		
