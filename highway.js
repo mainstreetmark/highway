@@ -5,6 +5,8 @@ var Highway = function(settings){
 	var _ = require('underscore');
 	var express = require('express');
 	var bodyParser = require('body-parser');
+	var MemoryStore = require('memory-store');
+
 	
 	var defaults = {
 		io: false,
@@ -20,7 +22,7 @@ var Highway = function(settings){
 	self.sockets = {};
 	
 	
-	MongoClient.connect(settings.uri+'/'+settings.database, listCollectionsCallback)
+	MongoClient.connect('mongodb://'+settings.uri.replace('mongodb://','')+'/'+settings.database, listCollectionsCallback)
 	
 	function SetUpREST(collection, sockets){
 		if(!settings.http){
@@ -122,13 +124,14 @@ var Highway = function(settings){
 	function listCollectionsCallback(err, db) {
 		if(err){ return err; }
 		self.db = mongojs(db, [])
-		handleAuthentication();
+		handleAuthentication(db);
 		self.db.getCollectionNames(collectionList);
 	}
 	
 	function handleAuthentication(){
 		
 		var passport = require('passport');
+		var LocalStrategy = require('passport-local').Strategy;
 		var session    = require('express-session');
 		var MongoStore = require('connect-mongostore')(session);
 		var passportSocketIo = require('passport.socketio');
@@ -136,12 +139,36 @@ var Highway = function(settings){
 
 		self.settings.http.use(session({
 			secret: secret,
-			store: new MongoStore({'db': 'sessions'}),
+			store: new MongoStore({ host: self.settings.uri, 'db': self.settings.database }), // use current database for sessions
 			resave: true,
 			saveUninitialized: true
 		}));
+		
+	    self.settings.http.use(passport.initialize());
 		self.settings.http.use(passport.session());
 		
+		
+		passport.use(new LocalStrategy({
+   		 usernameField: 'email',
+		},
+		  function(username, password, done) {
+		    self.db.collection('users').findOne({ email: username }, function(err, user) {
+		      if (err) { return done(err); }
+			  var bcrypt = require('bcrypt');
+
+			  var salt = bcrypt.genSaltSync(10);
+			  var hash = bcrypt.hashSync(password, salt);
+		      if (!user) {
+		        return done(null, false, { message: 'Incorrect email.' });
+		      }
+
+		      if (user.password != hash) {
+		        return done(null, false, { message: 'Incorrect password.' });
+		      }
+		      return done(null, user);
+		    });
+		  }
+		));
 		
 		//self.settings.io.use(passportSocketIo.authorize({
 		//  cookieParser: cookieParser,       // the same middleware you registrer in express
@@ -158,7 +185,10 @@ var Highway = function(settings){
 			  failureRedirect: '/login' 
 		  })
 	  	);
-		
+
+	self.settings.http.get('/',
+	  passport.authorize('local', { failureRedirect: '/account' })
+	);
 		
 		
 	}
