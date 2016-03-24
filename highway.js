@@ -162,6 +162,15 @@ var Highway = function(settings){
 			logout: strategy.routes.logout || '/logout',
 			home : strategy.routes.home || '/'
 		}
+		if(!strategy.homeCallback){
+			strategy.homeCallback = function(req, res){
+				if(!req.session || !req.session.passport.user){
+					res.redirect('/login.html')
+				} else {
+					res.send('you are logged in!');
+				}
+			}
+		}
 
 
 		self.settings.http.use(session({
@@ -170,11 +179,6 @@ var Highway = function(settings){
 			resave: true,
 			saveUninitialized: true
 		}));
-
-
-
-
-
 
 		passport.use(new LocalStrategy({
 			usernameField: 'email',
@@ -222,22 +226,13 @@ var Highway = function(settings){
 		});
 
 
-		self.settings.http.get('/', function(req, res){
-			if(!req.session)
-				res.redirect(routes.login)
-			if(!req.session.passport.user)
-				res.redirect(routes.login)
-			if(!req.session.passport.user._id)
-				res.redirect(routes.login)
-		} );
+		self.settings.http.get(routes.home, strategy.homeCallback);
 
 	}
+	
 
 	return self;	
 }
 
-Highway.prototype.isLoggedIn = function(){
-	
-}
 
 module.exports = Highway;
