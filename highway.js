@@ -5,8 +5,7 @@ var Highway = function(settings){
 	var _ = require('underscore');
 	var express = require('express');
 	var bodyParser = require('body-parser');
-	var MemoryStore = require('memory-store');
-
+	var cookieParser = require('cookie-parser');
 	
 	var defaults = {
 		io: false,
@@ -109,6 +108,7 @@ var Highway = function(settings){
 	
 	function collectionList(err, collections){
 		collections = collections.map(function(m){ return m.trim().toString(); })
+		self.settings.http.use(bodyParser.urlencoded({ extended: false }))
 		self.settings.http.use(bodyParser.json());
 		self.router = express.Router();
 		while( (collection = collections.pop()) !== undefined){
@@ -134,7 +134,7 @@ var Highway = function(settings){
 		var LocalStrategy = require('passport-local').Strategy;
 		var session    = require('express-session');
 		var MongoStore = require('connect-mongostore')(session);
-		var passportSocketIo = require('passport.socketio');
+		//var passportSocketIo = require('passport.socketio');
 		var secret = self.settings.auth_secret || 'highwaysecret';
 
 		self.settings.http.use(session({
@@ -144,32 +144,41 @@ var Highway = function(settings){
 			saveUninitialized: true
 		}));
 		
-	    self.settings.http.use(passport.initialize());
-		self.settings.http.use(passport.session());
-		
-		
+
 		passport.use(new LocalStrategy({
-   		 usernameField: 'email',
+			usernameField: 'email',
+			passReqToCallback : true
 		},
-		  function(username, password, done) {
+		  function(req, username, password, done) {
 		    self.db.collection('users').findOne({ email: username }, function(err, user) {
 		      if (err) { return done(err); }
-			  var bcrypt = require('bcrypt');
-
-			  var salt = bcrypt.genSaltSync(10);
-			  var hash = bcrypt.hashSync(password, salt);
 		      if (!user) {
 		        return done(null, false, { message: 'Incorrect email.' });
 		      }
 
-		      if (user.password != hash) {
+			  var bcrypt = require('bcrypt');
+			  var salt = bcrypt.genSaltSync(10);
+		      if (!bcrypt.compareSync(password, user.password)) {
 		        return done(null, false, { message: 'Incorrect password.' });
 		      }
-		      return done(null, user);
+			      return done(null, user);
 		    });
 		  }
 		));
+
+		passport.serializeUser(function(user, done) {
+			delete user.password;  // Remove password from serialized user
+		  done(null, user);
+		});
+
+		passport.deserializeUser(function(user, done) {
+		  done(null, user);
+		});
+
+	    self.settings.http.use(passport.initialize());
+		self.settings.http.use(passport.session());
 		
+
 		//self.settings.io.use(passportSocketIo.authorize({
 		//  cookieParser: cookieParser,       // the same middleware you registrer in express
 		//  key:          'express.sid',       // the name of the cookie where express/connect stores its session_id
@@ -179,16 +188,31 @@ var Highway = function(settings){
 		 // fail:         onAuthorizeFail,     // *optional* callback on fail/error - read more below
 			//}));
 			
-		self.settings.http.post('/login',
-		  passport.authenticate('local', { 
-			  successRedirect: '/',
-			  failureRedirect: '/login' 
-		  })
+		self.settings.http.post('/auth',
+		  passport.authenticate('local', {
+			  failureRedirect: '/loginerror'
+		  }),
+		  function(req, res){
+			  console.log(req.session);
+			  res.redirect('/');
+		  } 
 	  	);
 
-	self.settings.http.get('/',
-	  passport.authorize('local', { failureRedirect: '/account' })
-	);
+		self.settings.http.get('/logout', function(req, res){
+		  req.logout();
+		  res.redirect('/');
+		});
+
+
+	  self.settings.http.get('/loginerror', function(req,res) {
+	      console.log(req.flash('error'));
+	      res.redirect('/login');
+	  });
+
+
+		self.settings.http.get('/', passport.authorize('local', { failureRedirect: '/fart'}), function(req, res){
+			res.send('oh, hey there!')
+		} );
 		
 		
 	}
