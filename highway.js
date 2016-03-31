@@ -210,6 +210,17 @@ var Highway = function(settings){
 	    self.settings.http.use(passport.initialize());
 		self.settings.http.use(passport.session());
 
+		self.settings.http.get(routes.auth, function(req,res){
+			var loggedIn = req.isAuthenticated();
+			if(!loggedIn){
+				res.send('false');
+				return
+			} else {
+				res.send(JSON.stringify(req.session.passport.user))
+				return;
+			}
+		})
+
 
 		self.settings.http.post(routes.auth ,
 		  passport.authenticate('local', {
@@ -226,7 +237,7 @@ var Highway = function(settings){
 		});
 
 
-		self.settings.http.get(routes.home, strategy.homeCallback);
+		//self.settings.http.get(routes.home, strategy.homeCallback);
 
 	}
 	
