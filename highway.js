@@ -203,6 +203,7 @@ var Highway = function(settings){
 		});
 
 		passport.deserializeUser(function(user, done) {
+			delete user.password;
 		  done(null, user);
 		});		
 
@@ -224,9 +225,9 @@ var Highway = function(settings){
 
 		self.settings.http.post(routes.auth ,
 		  passport.authenticate('local', {
-			  failureRedirect: routes.login,
-			  successRedirect: routes.home
+			  failureRedirect: routes.login
 		  }) , function(req, res){
+			  res.cookie('user', JSON.stringify(req.session.passport.user), { maxAge: 31536000, httpOnly: false });
 			  res.redirect(routes.home);
 		  }
 	  	);
