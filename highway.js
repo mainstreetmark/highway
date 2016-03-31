@@ -233,6 +233,7 @@ var Highway = function(settings){
 	  	);
 
 		self.settings.http.get(routes.logout, function(req, res){
+			res.cookie('user', false, { maxAge: 31536000, httpOnly: false });
 		  req.logout();
 		  res.redirect(routes.home);
 		});
