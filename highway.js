@@ -4,7 +4,7 @@ var Highway = function(settings){
 	var ObjectId = require('mongojs').ObjectId;
 	var _ = require('underscore');
 	var express = require('express');
-	
+
 	var defaults = {
 		io: false,
 		http: false,
@@ -12,28 +12,28 @@ var Highway = function(settings){
 		database: false,
 		auth: []
 	}
-	
+
 	var self = this;
 	self.settings = _.defaults(settings, defaults);
 	self.io = self.settings.io;
 	self.sockets = {};
-	
-	
+
+
 	MongoClient.connect('mongodb://'+settings.uri.replace('mongodb://','')+'/'+settings.database, listCollectionsCallback)
-	
+
 	function SetUpREST(collection, sockets){
 		if(!settings.http){
 			console.log('no http provided, aborting rest routes');
 			return false;
 		}
 		router = self.router;
-		
+
 		router.route('/'+settings.database+'/'+collection)
 	    .get(function(req, res){
 			fetchAllRecords(collection, {}, function(err, docs){ res.json(docs); });
 	    })
 	    .post(function(req, res) {
-			createRecord(req.body, collection, function(err, docs){ 
+			createRecord(req.body, collection, function(err, docs){
 				io.of('/'+settings.database+'/'+collection).emit('child_added', docs);
 				res.json(docs)
 			})
@@ -51,7 +51,7 @@ var Highway = function(settings){
 		})
 	    .delete(function(req, res) {
 			deleteRecord(req.params._id, collection, function(err){ req.json({ message: 'Successfully deleted' }); });
-	    });		
+	    });
 	}
 
 	function SetUpSockets(collection){
@@ -69,15 +69,15 @@ var Highway = function(settings){
 	 		})
 
 	 		socket.on('create', function(record){
-	 			createRecord(record, collection, function(err, docs){ socket.broadcast.emit('child_added', record); });
+	 			createRecord(record, collection, function(err, docs){ socket.emit('child_added', record); });
 	 		})
 
 	 		socket.on('destroy', function(record){
-				deleteRecord(record._id, collection, function(err, doc){ 
-					socket.broadcast.emit('child_changed', doc); 
+				deleteRecord(record._id, collection, function(err, doc){
+					socket.broadcast.emit('child_changed', doc);
 				});
 	 		})
-		})		
+		})
 	}
 
 	function fetchAllRecords(collection, search, callback){
@@ -85,12 +85,12 @@ var Highway = function(settings){
 		search = search || {};
 		self.db.collection(collection).find(search, callback);
 	}
-	
+
 	function createRecord(record, collection, callback){
 		callback = typeof callback == 'function' ? callback : function(err, docs){};
 		self.db.collection(collection).insert(record, callback);
 	}
-	
+
 	function updateRecord(record, collection, callback){
 		var tosave = _.clone(record);
 		delete tosave._id;
@@ -98,12 +98,12 @@ var Highway = function(settings){
 		self.db.collection(collection).update({ "_id": ObjectId(record._id) }, { $set: tosave }
 		, callback)
 	}
-	
+
 	function deleteRecord(_id, collection, callback){
 		callback = typeof callback == 'function' ? callback : function(err, docs){};
 		self.db.collection(collection).remove({ "_id" : ObjectId(_id)}, callback );
 	}
-	
+
 	function collectionList(err, collections){
 
 		collections = collections.map(function(m){ return m.trim().toString(); })
@@ -123,38 +123,40 @@ var Highway = function(settings){
 		var bodyParser = require('body-parser');
 		var cookieParser = require('cookie-parser');
 		self.db = mongojs(db, [])
-		
+
 		self.settings.http.use(cookieParser());
 		self.settings.http.use(bodyParser.urlencoded({ extended: true }))
 		self.settings.http.use(bodyParser.json());
 
-		
+
 		for(var i in self.settings.auth){
 			handleAuthentication(self.settings.auth[i])
 		}
 		self.db.getCollectionNames(collectionList);
 	}
-	
+
 	function handleAuthentication(strategy){
-		
+
 		switch(strategy.strategy){
 			case 'local':
 			default:
 				SetUpLocalAuthentication(strategy);
 				break;
 		}
-		
+
 	}
 
 	function SetUpLocalAuthentication(strategy){
 		var passport = require('passport');
-		var LocalStrategy = require('passport-local').Strategy;;
+		var LocalStrategy = require('passport-local').Strategy;
 		var session    = require('express-session');
 		var MongoStore = require('connect-mongostore')(session);
 		var secret = self.settings.auth_secret || 'highwaysecret';
 
 		if(!strategy.routes)
-			strategy.routes = {}
+			strategy.routes = {};
+		if(!strategy.options)
+			strategy.options = {};
 
 		var routes = {
 			auth: strategy.routes.auth || '/auth',
@@ -205,10 +207,10 @@ var Highway = function(settings){
 		passport.deserializeUser(function(user, done) {
 			delete user.password;
 		  done(null, user);
-		});		
+		});
 
 
-	    self.settings.http.use(passport.initialize());
+		self.settings.http.use(passport.initialize());
 		self.settings.http.use(passport.session());
 
 		self.settings.http.get(routes.auth, function(req,res){
@@ -238,13 +240,35 @@ var Highway = function(settings){
 		  res.redirect(routes.home);
 		});
 
+		self.settings.http.post('/highway/user', function(req,res){
+			var bcrypt = require('bcrypt');
+			var salt = bcrypt.genSaltSync(10);
+			if(!req.params.email){
+				// error, submit an email
+			}
+			if(!req.params.password){
+				// error, submit a password
+			}
+			var saltedpassword = bcrypt.hashSync(req.params.password, salt);
+			var user = {
+				email: req.params.email,
+				password: saltedpassword,
+				name: req.params.name
+			}
+			self.db.collection('users').insert(user, function(err, doc){
+				console.log(err, doc);
+				res.send(doc);
+			});
+		})
 
-		//self.settings.http.get(routes.home, strategy.homeCallback);
+		if(strategy.options.ForceRootAuth){
+			self.settings.http.get(routes.home, strategy.homeCallback);
+		}
 
 	}
-	
 
-	return self;	
+
+	return self;
 }
 
 
