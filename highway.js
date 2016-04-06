@@ -251,21 +251,25 @@ var Highway = function(settings){
 		self.settings.http.post('/highway/user', function(req,res){
 			var bcrypt = require('bcrypt');
 			var salt = bcrypt.genSaltSync(10);
-			if(!req.params.email){
+			if(!req.body.email){
 				// error, submit an email
+				res.send('Error: No email provided');
+				return;
 			}
-			if(!req.params.password){
+			if(!req.body.password){
 				// error, submit a password
+				res.send('Error: No password provided');
+				return;
 			}
-			var saltedpassword = bcrypt.hashSync(req.params.password, salt);
+			var saltedpassword = bcrypt.hashSync(req.body.password, salt);
 			var user = {
-				email: req.params.email,
+				email: req.body.email,
 				password: saltedpassword,
-				name: req.params.name
+				name: req.body.name
 			}
 			self.db.collection('users').insert(user, function(err, doc){
-				console.log(err, doc);
-				res.send(doc);
+				res.cookie('user', JSON.stringify(user), { maxAge: 31536000000, httpOnly: false });
+			  res.redirect(routes.home);
 			});
 		})
 
