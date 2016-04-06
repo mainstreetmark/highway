@@ -229,15 +229,23 @@ var Highway = function(settings){
 		  passport.authenticate('local', {
 			  failureRedirect: routes.login
 		  }) , function(req, res){
-			  res.cookie('user', JSON.stringify(req.session.passport.user), { maxAge: 31536000, httpOnly: false });
+			  res.cookie('user', JSON.stringify(req.session.passport.user), { maxAge: 31536000000, httpOnly: false });
 			  res.redirect(routes.home);
 		  }
 	  	);
 
 		self.settings.http.get(routes.logout, function(req, res){
-			res.cookie('user', false, { maxAge: 31536000000, httpOnly: false });
-		  req.logout();
-		  res.redirect(routes.home);
+			if(strategy.defaultUser){
+				self.db.collection('users').findOne({ "_id" : ObjectId(strategy.defaultUser)}, function(err, doc){
+					res.cookie('user', JSON.stringify(doc), { maxAge: 31536000000, httpOnly: false });
+				  req.logout();
+				  res.redirect(routes.home);
+				})
+			} else {
+				res.cookie('user', false, { maxAge: 31536000000, httpOnly: false });
+			  req.logout();
+			  res.redirect(routes.home);
+			}
 		});
 
 		self.settings.http.post('/highway/user', function(req,res){
