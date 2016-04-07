@@ -252,12 +252,10 @@ var Highway = function(settings){
 			var bcrypt = require('bcrypt');
 			var salt = bcrypt.genSaltSync(10);
 			if(!req.body.email){
-				// error, submit an email
 				res.send('Error: No email provided');
 				return;
 			}
 			if(!req.body.password){
-				// error, submit a password
 				res.send('Error: No password provided');
 				return;
 			}
