@@ -1,9 +1,15 @@
 var Highway = function(settings){
+	// MongoClient is how I do the bulk of my queries.
 	var MongoClient = require('mongodb').MongoClient;
+	// mongojs is used specifically for switching between databases;
 	var mongojs = require('mongojs');
+	// ObjectId to look for records by ID (_id)
 	var ObjectId = require('mongojs').ObjectId;
+	// underscore.  Should I use lodash for some reason?
 	var _ = require('underscore');
+	// express because this uses sockets and web
 	var express = require('express');
+	//var REST = require('./src/REST.js');
 
 	var defaults = {
 		io: false,
