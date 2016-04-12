@@ -297,7 +297,7 @@ var Highway = function(settings){
 		self.settings.http.get('/password-reset', function(req, res){
 			if(req.params.token){
 				self.db.collection('users').find({ "password_token" : req.params.token }, function(err, doc){
-					res.redirect('/new_password_form');
+					res.send(_.template(require('./templates/web/password_reset/form.html'))())
 				})
 			} else if(req.params.email){
 				self.db.collection('users').find({ "email" : req.params.email }, function(err, doc){
@@ -305,10 +305,10 @@ var Highway = function(settings){
 					var token = Math.random().toString(35).substring(2,32);
 					updateRecord(_.extend(doc, { password_token : token }), 'users');
 					self.SendEmail(req.params.email, 'passwordReset', { user_id: doc._id, token: token });
-					res.redirect('/');	// Flash a message somewhere
+					res.send(_.template(require('./templates/web/password_reset/email_sent.html'))())
 				})
 			} else {
-
+				res.send(_.template(require('./templates/web/password_reset/request.html'))())
 			}
 
 		})
