@@ -9,7 +9,9 @@ var Highway = function(settings){
 	var _ = require('underscore');
 	// express because this uses sockets and web
 	var express = require('express');
-
+	//
+	// email stuff
+	var Email = require('./src/email.js');
 
 
 	var defaults = {
@@ -27,6 +29,7 @@ var Highway = function(settings){
 	self.settings = _.defaults(settings, defaults);
 	self.io = self.settings.io;
 	self.sockets = {};
+	self.mailer = new Email(self.settings.email);
 
 
 	PrepareHTTP();
@@ -300,13 +303,8 @@ var Highway = function(settings){
 	return self;
 }
 
-Highway.prototype.SendEmail = function(){
-	// email stuff
-	var Email = require('./src/email.js');
-	var e = new Email();
-
-	return e.Send();
-
+Highway.prototype.SendEmail = function(message){
+	return this.mailer.Send(message);
 }
 
 
