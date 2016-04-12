@@ -294,6 +294,26 @@ var Highway = function(settings){
 			});
 		})
 
+		self.settings.http.get('/password-reset', function(req, res){
+			if(req.params.token){
+				self.db.collection('users').find({ "password_token" : req.params.token }, function(err, doc){
+					res.redirect('/new_password_form');
+				})
+			} else if(req.params.email){
+				self.db.collection('users').find({ "email" : req.params.email }, function(err, doc){
+					if(err) throw err;
+					var token = Math.random().toString(35).substring(2,32);
+					updateRecord(_.extend(doc, { password_token : token }), 'users');
+					self.SendEmail(req.params.email, 'passwordReset', { user_id: doc._id, token: token });
+					res.redirect('/');	// Flash a message somewhere
+				})
+			} else {
+
+			}
+
+		})
+
+
 		if(strategy.options.ForceRootAuth){
 			self.settings.http.get(routes.home, strategy.homeCallback);
 		}
@@ -303,8 +323,8 @@ var Highway = function(settings){
 	return self;
 }
 
-Highway.prototype.SendEmail = function(message){
-	return this.mailer.Send(message);
+Highway.prototype.SendEmail = function(to, message, options){
+	return this.mailer.Send(to, message, options);
 }
 
 
