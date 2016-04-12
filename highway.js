@@ -9,6 +9,8 @@ var Highway = function(settings){
 	var _ = require('underscore');
 	// express because this uses sockets and web
 	var express = require('express');
+	// email stuff
+	var Email = require('./src/email.js');
 	//var REST = require('./src/REST.js');
 
 	var defaults = {

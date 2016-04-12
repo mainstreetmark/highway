@@ -30,6 +30,7 @@
     "express-session": "^1.13.0",
     "mongodb": "^2.1.7",
     "mongojs": "^2.3.0",
+    "nodemailer": "^2.3.1",
     "passport": "^0.3.2",
     "passport-local": "^1.0.0",
     "passport.socketio": "^3.6.1",
