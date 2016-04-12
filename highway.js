@@ -9,17 +9,19 @@ var Highway = function(settings){
 	var _ = require('underscore');
 	// express because this uses sockets and web
 	var express = require('express');
-	// email stuff
-	var Email = require('./src/email.js');
-	//var REST = require('./src/REST.js');
+
+
 
 	var defaults = {
 		io: false,
 		http: false,
 		uri: false,
 		database: false,
-		auth: []
+		auth: [],
+		email: {}
 	}
+
+	settings = settings || {};
 
 	var self = this;
 	self.settings = _.defaults(settings, defaults);
@@ -27,8 +29,12 @@ var Highway = function(settings){
 	self.sockets = {};
 
 
-	MongoClient.connect('mongodb://'+settings.uri.replace('mongodb://','')+'/'+settings.database, listCollectionsCallback)
-
+	PrepareHTTP();
+	if(self.settings.uri){
+		MongoClient.connect('mongodb://'+settings.uri.replace('mongodb://','')+'/'+settings.database, listCollectionsCallback)
+	} else {
+		// Run without a database, I guess
+	}
 	function SetUpREST(collection, sockets){
 		if(!settings.http){
 			console.log('no http provided, aborting rest routes');
@@ -126,19 +132,25 @@ var Highway = function(settings){
 		self.settings.http.use('/', self.router);
 	}
 
-	function listCollectionsCallback(err, db) {
-		if(err){ return err; }
+	function PrepareHTTP(){
+		if(!self.settings.http)
+			return;
+
 		var bodyParser = require('body-parser');
 		var cookieParser = require('cookie-parser');
-		self.db = mongojs(db, [])
 
 		self.settings.http.use(cookieParser());
 		self.settings.http.use(bodyParser.urlencoded({ extended: true }))
 		self.settings.http.use(bodyParser.json());
+	}
 
+	function listCollectionsCallback(err, db) {
+		if(err){ return err; }
+
+		self.db = mongojs(db, [])
 
 		for(var i in self.settings.auth){
-			handleAuthentication(self.settings.auth[i])
+			handleAuthentication(self.settings.auth[i]) // This requires self.db to be populated, so it has to live here for now
 		}
 		self.db.getCollectionNames(collectionList);
 	}
@@ -286,6 +298,15 @@ var Highway = function(settings){
 	}
 
 	return self;
+}
+
+Highway.prototype.SendEmail = function(){
+	// email stuff
+	var Email = require('./src/email.js');
+	var e = new Email();
+
+	return e.Send();
+
 }
 
 
