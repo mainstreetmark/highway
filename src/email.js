@@ -1,3 +1,4 @@
+var _ = require('underscore');
 var Email = function (options) {
     var self = this;
     self.options = options || {};
@@ -9,7 +10,8 @@ Email.prototype.getOption = function(key){
   return self.options[key] || '';
 }
 
-Email.prototype.bulidMessage = function(to, message, options){
+Email.prototype.buildMessage = function(to, message, options){
+  var fs = require('fs');
   var out = {
     to: to,
     subject: ''
@@ -19,8 +21,8 @@ Email.prototype.bulidMessage = function(to, message, options){
 
   switch(typeof message){
     case 'string':
-      if(self.settings.messages[message]){
-        _.extend(out, self.settings.messages[message])
+      if(this.options.messages[message]){
+        _.extend(out, this.options.messages[message])
       } else {
         console.log('No message named '+ message +' exists. Exiting');
         return false;
@@ -37,8 +39,9 @@ Email.prototype.bulidMessage = function(to, message, options){
   }
 
   if(out.template){
-    out.html = _.template(require(out.template))(options);
-    delete out.template;
+    var template = fs.readFileSync(out.template).toString();
+    out.html = _.template(template)(options);
+    //delete out.template;
   }
 
   return out;
@@ -46,7 +49,7 @@ Email.prototype.bulidMessage = function(to, message, options){
 
 Email.prototype.Send = function (to, message, options) {
 
-  if(!self.options.transporter){
+  if(!this.options.transporter){
     console.log('No valid transporter provided, unable to send message');
     return false;
   }
@@ -54,7 +57,7 @@ Email.prototype.Send = function (to, message, options) {
 	var nodemailer = require( 'nodemailer' );
 
 	// create reusable transporter object using the default SMTP transport
-	var transporter = nodemailer.createTransport( self.options.transporter );
+	var transporter = nodemailer.createTransport( this.options.transporter );
 
 	// send mail with defined transport object
 	transporter.sendMail( this.buildMessage(to, message, options), function ( error, info ) {

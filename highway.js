@@ -296,21 +296,20 @@ var Highway = function(settings){
 
 		self.settings.http.get('/password-reset', function(req, res){
 			var fs = require('fs');
-			if(req.params.token){
-				self.db.collection('users').find({ "password_token" : req.params.token }, function(err, doc){
+			if(req.query.token){
+				self.db.collection('users').find({ "password_token" : req.query.token }, function(err, doc){
 					fs.readFile(__dirname+'/templates/web/password_reset/form.html', 'utf8', function(err, data){
 						res.send(_.template(data)());
 					})
 				})
-			} else if(req.params.email){
-				self.db.collection('users').find({ "email" : req.params.email }, function(err, doc){
+			} else if(req.query.email){
+				self.db.collection('users').find({ "email" : req.query.email }, function(err, doc){
 					if(err) throw err;
 					var token = Math.random().toString(35).substring(2,32);
-					updateRecord(_.extend(doc, { password_token : token }), 'users');
-					self.SendEmail(req.params.email, 'passwordReset', { user_id: doc._id, token: token });
-					fs.readFile(__dirname+'/templates/web/password_reset/email_sent.html', 'utf8', function(err, data){
-						res.send(_.template(data)());
-					})
+					updateRecord(_.extend(doc[0], { password_token : token }), 'users');
+					self.SendEmail(req.query.email, 'passwordReset', { "_id": doc[0]._id, "token": token });
+					var template = _.template(fs.readFileSync(__dirname+'/templates/web/password_reset/email_sent.html'))
+					res.send(template());
 				})
 			} else {
 				fs.readFile(__dirname+'/templates/web/password_reset/request.html', 'utf8', function(err, data){
