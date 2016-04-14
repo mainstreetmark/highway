@@ -252,7 +252,7 @@ var Highway = function(settings){
 		  passport.authenticate('local', {
 			  failureRedirect: routes.login
 		  }) , function(req, res){
-			  res.cookie('user', req.session.passport.user._id, { maxAge: 31536000000, httpOnly: false });
+			  res.cookie('user', req.session.passport.user._id.toString(), { maxAge: 31536000000, httpOnly: false });
 			  res.redirect(routes.home);
 		  }
 	  	);
