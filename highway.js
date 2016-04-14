@@ -252,23 +252,16 @@ var Highway = function(settings){
 		  passport.authenticate('local', {
 			  failureRedirect: routes.login
 		  }) , function(req, res){
-			  res.cookie('user', JSON.stringify(req.session.passport.user), { maxAge: 31536000000, httpOnly: false });
+			  res.cookie('user', req.session.passport.user._id, { maxAge: 31536000000, httpOnly: false });
 			  res.redirect(routes.home);
 		  }
 	  	);
 
 		self.settings.http.get(routes.logout, function(req, res){
-			if(strategy.defaultUser){
-				self.db.collection('users').findOne({ "_id" : ObjectId(strategy.defaultUser)}, function(err, doc){
-					res.cookie('user', JSON.stringify(doc), { maxAge: 31536000000, httpOnly: false });
-				  req.logout();
-				  res.redirect(routes.home);
-				})
-			} else {
-				res.cookie('user', false, { maxAge: 31536000000, httpOnly: false });
-			  req.logout();
-			  res.redirect(routes.home);
-			}
+			res.cookie('user', strategy.defaultUser || false, { maxAge: 31536000000, httpOnly: false });
+			req.logout();
+			res.redirect(routes.home);
+
 		});
 
 		self.settings.http.post('/highway/user', function(req,res){
@@ -289,7 +282,7 @@ var Highway = function(settings){
 				name: req.body.name
 			}
 			self.db.collection('users').insert(user, function(err, doc){
-				res.cookie('user', JSON.stringify(user), { maxAge: 31536000000, httpOnly: false });
+				res.cookie('user', doc._id, { maxAge: 31536000000, httpOnly: false });
 			  res.redirect(routes.home);
 			});
 		})
