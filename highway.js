@@ -84,10 +84,11 @@ var Highway = function(settings){
 	 		socket.on('update', function(record){
 				updateRecord(record, collection, function(err, docs){ socket.emit('child_changed', record); });
 	 		})
-
-	 		socket.on('create', function(record){
-	 			createRecord(record, collection, function(err, docs){ socket.emit('child_added', record); });
-	 		})
+			
+			socket.on('create', function(record, fn){
+				createRecord(record, collection, function(err, docs){ fn(docs); socket.broadcast.emit('child_added', docs) });
+			})
+			
 
 	 		socket.on('destroy', function(record){
 				deleteRecord(record._id, collection, function(err, doc){
@@ -291,9 +292,8 @@ var Highway = function(settings){
 			var fs = require('fs');
 			if(req.query.token){
 				self.db.collection('users').find({ "password_token" : req.query.token }, function(err, doc){
-					fs.readFile(__dirname+'/templates/web/password_reset/form.html', 'utf8', function(err, data){
-						res.send(_.template(data)());
-					})
+					var data = fs.readFileSync(__dirname+'/templates/web/password_reset/form.html');
+					res.send(_.template(data)());
 				})
 			} else if(req.query.email){
 				self.db.collection('users').find({ "email" : req.query.email }, function(err, doc){
