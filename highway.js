@@ -54,7 +54,7 @@ var Highway = function(settings) {
 			})
 			.post(function(req, res) {
 				createRecord(req.body, collection, function(err, docs) {
-					io.of('/' + settings.database + '/' + collection).emit('child_added', docs);
+					self.io.of('/' + settings.database + '/' + collection).emit('child_added', docs);
 					res.json(docs)
 				})
 			});
