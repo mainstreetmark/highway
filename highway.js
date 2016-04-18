@@ -159,6 +159,8 @@ var Highway = function(settings) {
 			}
 		}
 		self.settings.http.use('/', self.router);
+		if(typeof self.settings.onComplete == 'function')
+			self.settings.onComplete();
 	}
 
 	function PrepareHTTP() {
