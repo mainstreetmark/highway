@@ -33,11 +33,8 @@ var Highway = function(settings){
 
 
 	PrepareHTTP();
-	if(self.settings.uri){
-		MongoClient.connect('mongodb://'+settings.uri.replace('mongodb://','')+'/'+settings.database, listCollectionsCallback);
-	} else {
-		// Run without a database, I guess
-	}
+	MongoClient.connect('mongodb://'+settings.uri.replace('mongodb://','')+'/'+settings.database, listCollectionsCallback);
+
 	function SetUpREST(collection, sockets){
 		if(!settings.http){
 			console.log('no http provided, aborting rest routes');
@@ -85,8 +82,8 @@ var Highway = function(settings){
 				updateRecord(record, collection, function(err, docs){ socket.broadcast.emit('child_changed', record); });
 	 		})
 
-	 		socket.on('create', function(record){
-	 			createRecord(record, collection, function(err, docs){ socket.emit('child_added', record); });
+	 		socket.on('create', function(record, fn){
+	 			createRecord(record, collection, function(err, docs){ fn(docs); socket.emit('child_added', record); });
 	 		})
 
 	 		socket.on('destroy', function(record){
