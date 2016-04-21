@@ -1,10 +1,15 @@
 var Promise = require( 'promise' );
+var MongoClient = require( 'mongodb' )
+	.MongoClient;
+var mongojs = require( 'mongojs' );
+// ObjectId to look for records by ID (_id)
+var ObjectId = require( 'mongojs' )
+	.ObjectId;
 var DB = function ( uri, options ) {
-
 	if ( !uri ) {
 		console.log( 'No URI provided. No database connection available' );
 	}
-	this.uri = sanitizeURI( uri );
+	this.uri = uri;
 	this.options = options || {};
 
 	function sanitizeURI( uri ) {
@@ -22,15 +27,40 @@ var DB = function ( uri, options ) {
  * @return {instance} An instance of MongoClient
  */
 DB.prototype.connect = function ( uri ) {
+	var self = this;
 	return new Promise( function ( fulfill, reject ) {
-			MongoClient.connect( 'mongodb://' + ( uri || this.uri ) ),
-				function ( err, db ) {
-					if ( err ) reject( err );
-					else fulfill( db );
-				} );
+		MongoClient.connect( 'mongodb://' + self.uri,
+			function ( err, db ) {
+				if ( err ) reject( err );
+				else {
+					self.connection = db;
+					fulfill( db );
+				}
+			} );
 	} );
 };
 
+/**
+ * get a list of all collections in a database
+ * @method listCollections
+ * @return {array}        A list of all collections
+ */
+DB.prototype.listCollections = function ( db ) {
+	var self = this;
+	self.db = mongojs( db, [] );
+	return new Promise( function ( success, failure ) {
+		self.db.getCollectionNames( function ( err, collections ) {
+			if ( err ) failure( err );
+			else {
+				collections = collections.map( function ( m ) {
+					return m.trim()
+						.toString();
+				} )
+				success( collections );
+			}
+		} )
+	} )
+}
 
 /**
  * Fetch all records from a specific collection, using specified search parameters
@@ -140,7 +170,8 @@ DB.prototype.deleteRecord = function ( _id, collection, callback ) {
 DB.prototype.hook = function ( collection, hook, data ) {
 	return new Promise( function ( success, failure ) {
 		if ( this.options.hooks && this.options.hooks[ collection ] && typeof this.options.hooks[ collection ][ hook ] == 'function' )
-			try ( data = this.options.hooks[ collection ][ hook ]( data ); ) {
+			try {
+				data = this.options.hooks[ collection ][ hook ]( data );
 				success( data );
 			} catch ( x ) {
 				failure( x );
