@@ -1,4 +1,6 @@
-var SocketServer = function ( sockets, collection, db ) {
+var SocketServer = function ( io, collection, db ) {
+	this.collection = collection;
+	this.sockets = io.of( '/' + settings.database + '/' + collection );
 	sockets[ collection ].on( 'connection', function ( socket ) {
 
 
@@ -61,6 +63,9 @@ var SocketServer = function ( sockets, collection, db ) {
 	} )
 }
 
+SocketServer.prototype.broadcast = function ( message ) {
+	this.sockets.emit( message );
+}
 
 
 module.exports = SocketServer;
