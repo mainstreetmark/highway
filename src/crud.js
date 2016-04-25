@@ -5,6 +5,7 @@ var mongojs = require( 'mongojs' );
 // ObjectId to look for records by ID (_id)
 var ObjectId = require( 'mongojs' )
 	.ObjectId;
+
 var DB = function ( uri, options ) {
 	if ( !uri ) {
 		console.log( 'No URI provided. No database connection available' );
@@ -12,6 +13,7 @@ var DB = function ( uri, options ) {
 	this.uri = uri;
 	this.options = options || {};
 	this.collections = [];
+	this.db;
 
 	function sanitizeURI( uri ) {
 		return uri.replace( 'mongodb://', '' );
@@ -34,11 +36,24 @@ DB.prototype.connect = function ( uri ) {
 			function ( err, db ) {
 				if ( err ) reject( err );
 				else {
+					self.db = mongojs( db, [] );
 					self.connection = db;
-					fulfill( db );
+					self.db.getCollectionNames( function ( err, collections ) {
+						if ( err ) reject( err );
+						else {
+							collections = collections.map( function ( m ) {
+								self.collections.push( m.trim()
+									.toString() );
+								return m.trim()
+									.toString();
+							} )
+
+							fulfill( self );
+						}
+					} );
 				}
-			} );
-	} );
+			} )
+	} )
 };
 
 
@@ -49,32 +64,13 @@ DB.prototype.connect = function ( uri ) {
  * @return {[type]} [description]
  */
 DB.prototype.collection = function ( collection ) {
+	console.log( this.collections );
 	return this.db.collection( collection );
 }
 
 
 
-/**
- * get a list of all collections in a database
- * @method listCollections
- * @return {array}        A list of all collections
- */
-DB.prototype.listCollections = function ( db ) {
-	var self = this;
-	self.db = mongojs( db, [] );
-	return new Promise( function ( success, failure ) {
-		self.db.getCollectionNames( function ( err, collections ) {
-			if ( err ) failure( err );
-			else {
-				collections = collections.map( function ( m ) {
-					return m.trim()
-						.toString();
-				} )
-				success( collections );
-			}
-		} )
-	} )
-}
+
 
 /**
  * Fetch all records from a specific collection, using specified search parameters
