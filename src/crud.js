@@ -11,6 +11,7 @@ var DB = function ( uri, options ) {
 	}
 	this.uri = uri;
 	this.options = options || {};
+	this.collections = [];
 
 	function sanitizeURI( uri ) {
 		return uri.replace( 'mongodb://', '' );
@@ -39,6 +40,19 @@ DB.prototype.connect = function ( uri ) {
 			} );
 	} );
 };
+
+
+/**
+ * A wrapper for mongojs .collection()
+ * @method function
+ * @param  {[type]} collection [description]
+ * @return {[type]} [description]
+ */
+DB.prototype.collection = function ( collection ) {
+	return this.db.collection( collection );
+}
+
+
 
 /**
  * get a list of all collections in a database
