@@ -37,10 +37,11 @@ var Highway = function ( settings ) {
 
 
 	PrepareHTTP();
-	var db = new DB( settings.uri );
+	var db = new DB( settings.uri + '/' + settings.database );
 	db.connect()
 		.then( function ( d ) {
-			console.log( d );
+			self.db = d;
+			listCollectionsCallback( d );
 		} )
 		//	MongoClient.connect( 'mongodb://' + settings.uri.replace( 'mongodb://', '' ) + '/' + settings.database, listCollectionsCallback );
 
@@ -155,13 +156,9 @@ var Highway = function ( settings ) {
 			}, callback );
 	}
 
-	function collectionList( err, collections ) {
-
-		collections = collections.map( function ( m ) {
-			return m.trim()
-				.toString();
-		} )
+	function collectionList() {
 		self.router = express.Router();
+		collections = self.db.collections;
 		while ( ( collection = collections.pop() ) !== undefined ) {
 			if ( collection != '' && collection != 'system.indexes' ) {
 				self.sockets[ collection ] = self.io.of( '/' + settings.database + '/' + collection );
@@ -189,17 +186,11 @@ var Highway = function ( settings ) {
 		self.settings.http.use( bodyParser.json() );
 	}
 
-	function listCollectionsCallback( err, db ) {
-		if ( err ) {
-			return err;
-		}
-
-		self.db = mongojs( db, [] );
-
+	function listCollectionsCallback( db ) {
 		for ( var i in self.settings.auth ) {
 			handleAuthentication( self.settings.auth[ i ] ); // This requires self.db to be populated, so it has to live here for now
 		}
-		self.db.getCollectionNames( collectionList );
+		collectionList();
 	}
 
 	function handleAuthentication( strategy ) {
