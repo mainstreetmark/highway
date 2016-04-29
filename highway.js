@@ -11,9 +11,11 @@ var Highway = function ( settings ) {
 	var _ = require( 'underscore' );
 	// express because this uses sockets and web
 	var express = require( 'express' );
-	//
+
 	// email stuff
 	var Email = require( './src/email.js' );
+
+	var DB = require( './src/crud.js' );
 
 
 	var defaults = {
@@ -35,7 +37,12 @@ var Highway = function ( settings ) {
 
 
 	PrepareHTTP();
-	MongoClient.connect( 'mongodb://' + settings.uri.replace( 'mongodb://', '' ) + '/' + settings.database, listCollectionsCallback );
+	var db = new DB( settings.uri );
+	db.connect()
+		.then( function ( d ) {
+			console.log( d );
+		} )
+		//	MongoClient.connect( 'mongodb://' + settings.uri.replace( 'mongodb://', '' ) + '/' + settings.database, listCollectionsCallback );
 
 	function SetUpREST( collection, sockets ) {
 		if ( !settings.http ) {
