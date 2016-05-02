@@ -1,9 +1,19 @@
 var expect = require('expect.js');
 
-var Highway = require( '../highway.js' );
-
 describe('syntax', function(){
-  it('should be valid',function(){
+  it('highway should be valid',function(){
+	  var Highway = require( '../highway.js' );
 	  expect(typeof Highway).to.equal('function');
   })
+
+  it('crud should be valid',function(){
+	  var DB = require( '../src/crud.js' );
+	  expect(typeof DB).to.equal('function');
+  })
+  
+  it('email should be valid',function(){
+	  var Email = require( '../src/email.js' );
+	  expect(typeof Email).to.equal('function');
+  })
+
 });
