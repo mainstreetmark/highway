@@ -77,29 +77,28 @@ var Highway = function (settings) {
 			})
 			.put(function (req, res) {
 				var record = req.params;
-				updateRecord(record, collection, function (err, doc) {
+				self.db.updateRecord(record, collection).then(function (record) {
+					self.io.of('/' + settings.database + '/' + collection).emit('child_changed', record);
 					res.json(doc);
 				});
 			})
 			.delete(function (req, res) {
-				deleteRecord(req.params._id, collection, function (err) {
+				self.db.deleteRecord(req.params._id, collection).then(function () {
 					req.json({
 						message: 'Successfully deleted'
 					});
-				});
+				})
 			});
 	}
 
 	function SetUpSockets(collection) {
-		if (!settings.io) {
-			console.log('no io provided, aborting sockets');
-			return false;
-		}
+		var self = this;
 		self.sockets[collection].on('connection', function (socket) {
 			socket.on('init', function (search) {
-				fetchAllRecords(collection, search, function (err, docs) {
-					socket.emit('all_records', docs);
-				});
+				self.db.fetchAllRecords(collection, {})
+					.then(function (docs) {
+						socket.emit('all_records', docs);
+					})
 			})
 
 			socket.on('update', function (record) {
