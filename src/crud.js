@@ -70,7 +70,6 @@ DB.prototype.collection = function (collection) {
 
 
 
-
 /**
  * Fetch all records from a specific collection, using specified search parameters
  * and return a promise
@@ -123,17 +122,16 @@ DB.prototype.createRecord = function (record, collection) {
  * @method updateRecord
  * @param  {[type]}     record     [description]
  * @param  {[type]}     collection [description]
- * @param  {Function}   callback   [description]
  * @return {[type]}     [description]
  */
-DB.prototype.updateRecord = function (record, collection, callback) {
-	return this.hook(collection, 'beforeSave', record)
-		.then(function (record) {
-			var tosave = _.clone(record);
-			delete tosave._id;
-			callback = typeof callback == 'function' ? callback : function (err, docs) {};
-			return new Promise(function (success, error) {
-				self.db.collection(collection)
+DB.prototype.updateRecord = function (record, collection) {
+	var self = this;
+	return new Promise(function (success, failure) {
+		self.hook(collection, 'beforeSave', record)
+			.then(function (record) {
+				var tosave = _.clone(record);
+				delete tosave._id;
+				self.collection(collection)
 					.update({
 						"_id": ObjectId(record._id)
 					}, {
@@ -145,8 +143,11 @@ DB.prototype.updateRecord = function (record, collection, callback) {
 							success(docs);
 						}
 					})
-			});
-		})
+
+			})
+
+
+	})
 };
 
 /**
@@ -154,18 +155,15 @@ DB.prototype.updateRecord = function (record, collection, callback) {
  * @method deleteRecord
  * @param  {[type]}     _id        [description]
  * @param  {[type]}     collection [description]
- * @param  {Function}   callback   [description]
  * @return {[type]}     [description]
  */
-DB.prototype.deleteRecord = function (_id, collection, callback) {
-	callback = typeof callback == 'function' ? callback : function (err, docs) {};
+DB.prototype.deleteRecord = function (_id, collection) {
 	return new Promise(function (success, failure) {
-		self.db.collection(collection)
+		self.collection(collection)
 			.remove({
 				"_id": ObjectId(_id)
 			}, function (err, doc) {
 				if (err) failure(err);
-				callback();
 				success(doc);
 			});
 	})
@@ -182,7 +180,6 @@ DB.prototype.deleteRecord = function (_id, collection, callback) {
  */
 DB.prototype.hook = function (collection, hook, data) {
 	var self = this;
-	console.log(collection, hook, data, self.hooks);
 	return new Promise(function (success, failure) {
 		if (self.hooks && self.hooks[collection] && typeof self.hooks[collection][hook] == 'function') {
 			try {

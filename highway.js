@@ -69,12 +69,11 @@ var Highway = function (settings) {
 
 		router.route('/' + settings.database + '/' + collection + '/:_id')
 			.get(function (req, res) {
-				self.db.collection(collection)
-					.find({
-						"_id": ObjectId(req.params._id)
-					}, function (err, doc) {
-						res.json(doc);
-					})
+				self.db.fetchAllRecords(collection, {
+					"_id": ObjectId(req.params._id)
+				}).then(function (doc) {
+					res.json(doc);
+				})
 			})
 			.put(function (req, res) {
 				var record = req.params;
