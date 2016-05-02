@@ -4,7 +4,7 @@
   "description": "Web sockets and HTTP access to mongo",
   "main": "highway.js",
   "scripts": {
-    "test": "mocha tests"
+    "test": "mocha test"
   },
   "repository": {
     "type": "git",
@@ -37,5 +37,8 @@
     "promise": "^7.1.1",
     "socket.io": "^1.4.5",
     "underscore": "^1.8.3"
+  },
+  "devDependencies": {
+    "expect": "^1.18.0"
   }
 }

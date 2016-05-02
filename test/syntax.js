@@ -1,11 +1,9 @@
+var expect = require('expect.js');
+
 var Highway = require( '../highway.js' );
 
-describe('homepage', function(){
-  it('should respond to GET',function(){
-    superagent
-      .get('http://localhost:'+port)
-      .end(function(res){
-        expect(res.status).to.equal(200);
-    })
+describe('syntax', function(){
+  it('should be valid',function(){
+	  expect(typeof Highway).to.equal('function');
   })
 });

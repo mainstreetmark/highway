@@ -92,7 +92,6 @@ var Highway = function (settings) {
 	}
 
 	function SetUpSockets(collection) {
-		var self = this;
 		self.sockets[collection].on('connection', function (socket) {
 			socket.on('init', function (search) {
 				self.db.fetchAllRecords(collection, {})
@@ -120,13 +119,6 @@ var Highway = function (settings) {
 				});
 			})
 		})
-	}
-
-	function fetchAllRecords(collection, search, callback) {
-		callback = typeof callback == 'function' ? callback : function (err, docs) {};
-		search = search || {};
-		self.db.collection(collection)
-			.find(search, callback);
 	}
 
 	function createRecord(record, collection, callback) {
