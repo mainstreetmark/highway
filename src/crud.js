@@ -64,7 +64,6 @@ DB.prototype.connect = function ( uri ) {
  * @return {[type]} [description]
  */
 DB.prototype.collection = function ( collection ) {
-	console.log( this.collections );
 	return this.db.collection( collection );
 }
 
@@ -82,20 +81,17 @@ DB.prototype.collection = function ( collection ) {
  * @param  {Function}      callback   A method to execute when the search completes
  * @return {promise}        A promise
  */
-DB.prototype.fetchAllRecords = function ( collection, search, callback ) {
-	callback = typeof callback == 'function' ? callback : function ( err, docs ) {};
+DB.prototype.fetchAllRecords = function ( collection, search ) {
+	var self = this;
 	search = search || {};
 	return new Promise( function ( success, failure ) {
 		self.db.collection( collection )
 			.find( search, function ( err, docs ) {
 				if ( err ) failure( err );
-				else {
-					callback( err, docs );
+				else
 					success( docs );
-				}
 			} );
 	} )
-
 };
 
 /**
@@ -179,13 +175,16 @@ DB.prototype.deleteRecord = function ( _id, collection, callback ) {
  */
 DB.prototype.hook = function ( collection, hook, data ) {
 	return new Promise( function ( success, failure ) {
-		if ( this.options.hooks && this.options.hooks[ collection ] && typeof this.options.hooks[ collection ][ hook ] == 'function' )
+		if ( this.options.hooks && this.options.hooks[ collection ] && typeof this.options.hooks[ collection ][ hook ] == 'function' ) {
 			try {
 				data = this.options.hooks[ collection ][ hook ]( data );
 				success( data );
 			} catch ( x ) {
 				failure( x );
 			}
+		} else {
+			success( data );
+		}
 	} );
 
 
