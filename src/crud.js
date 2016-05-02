@@ -1,6 +1,5 @@
 var Promise = require('promise');
-var MongoClient = require('mongodb')
-	.MongoClient;
+
 var mongojs = require('mongojs');
 // ObjectId to look for records by ID (_id)
 var ObjectId = require('mongojs')
@@ -37,7 +36,7 @@ DB.prototype.connect = function (uri) {
 				if (err) reject(err);
 				else {
 					self.db = mongojs(db, []);
-					self.connection = db;
+					console.log('Connected to database');
 					self.db.getCollectionNames(function (err, collections) {
 						if (err) reject(err);
 						else {

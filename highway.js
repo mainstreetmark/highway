@@ -27,6 +27,10 @@ var Highway = function (settings) {
 		email: {}
 	};
 
+	if(!settings){
+		throw new Error('No settings provided');
+	}
+
 	settings = settings || {};
 
 	var self = this;

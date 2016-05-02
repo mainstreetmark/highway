@@ -17,3 +17,20 @@ describe('syntax', function(){
   })
 
 });
+
+var Highway = require('../highway.js');
+
+describe('Instantiating', function(){
+	
+	it('should fail when no config is passed', function(){
+		var err = true;
+		try {
+			var hw = new Highway();
+			err = false;
+		} catch(x) {
+			
+		}
+		expect(err).to.equal(true);
+
+	})
+})
