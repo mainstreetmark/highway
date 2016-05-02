@@ -392,7 +392,10 @@ var Highway = function (settings) {
 	return self;
 };
 
-
+Highway.prototype.CleanUp = function(){
+	this.db.connection.close();	// close the MongoClient connection
+	this.db.close(); // close the mongojs connection
+}
 
 Highway.prototype.SendEmail = function (to, message, options) {
 	return this.mailer.Send(to, message, options);
