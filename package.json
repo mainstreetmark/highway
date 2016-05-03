@@ -1,14 +1,26 @@
 {
   "name": "highway",
-  "version": "0.1.1",
+  "version": "0.1.2",
   "description": "Web sockets and HTTP access to mongo",
   "main": "highway.js",
   "scripts": {
-    "test": "mocha test"
+    "test": "mocha test",
+    "coverage": "mocha --require blanket --reporter mocha-lcov-reporter | ./node_modules/coveralls/bin/coveralls.js"
   },
   "repository": {
     "type": "git",
     "url": "git+https://github.com/krewenki/highway.git"
+  },
+  "config": {
+    "blanket": {
+      "pattern": [
+        ""
+      ],
+      "data-cover-never": [
+        "node_modules",
+        "test"
+      ]
+    }
   },
   "keywords": [
     "websockets",
@@ -39,6 +51,8 @@
     "underscore": "^1.8.3"
   },
   "devDependencies": {
-    "expect": "^1.18.0"
+    "blanket": "^1.1.9",
+    "expect": "^1.18.0",
+    "mocha-lcov-reporter": "^1.2.0"
   }
 }
