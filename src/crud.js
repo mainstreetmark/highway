@@ -1,21 +1,24 @@
-var Promise = require('promise');
+var Promise = require( 'promise' );
 
-var mongojs = require('mongojs');
+var MongoClient = require( 'mongodb' )
+	.MongoClient;
+
+var mongojs = require( 'mongojs' );
 // ObjectId to look for records by ID (_id)
-var ObjectId = require('mongojs')
+var ObjectId = require( 'mongojs' )
 	.ObjectId;
 
-var DB = function (uri, hooks) {
-	if (!uri) {
-		console.log('No URI provided. No database connection available');
+var DB = function ( uri, hooks ) {
+	if ( !uri ) {
+		console.log( 'No URI provided. No database connection available' );
 	}
 	this.uri = uri;
 	this.hooks = hooks || {};
 	this.collections = [];
 	this.db;
 
-	function sanitizeURI(uri) {
-		return uri.replace('mongodb://', '');
+	function sanitizeURI( uri ) {
+		return uri.replace( 'mongodb://', '' );
 	}
 
 	return this;
@@ -28,32 +31,32 @@ var DB = function (uri, hooks) {
  * @param  {string} uri An optional uri to connect to.
  * @return {instance} An instance of MongoClient
  */
-DB.prototype.connect = function (uri) {
+DB.prototype.connect = function ( uri ) {
 	var self = this;
-	return new Promise(function (fulfill, reject) {
-		MongoClient.connect('mongodb://' + self.uri,
-			function (err, db) {
-				if (err) reject(err);
+	return new Promise( function ( fulfill, reject ) {
+		MongoClient.connect( 'mongodb://' + self.uri,
+			function ( err, db ) {
+				if ( err ) reject( err );
 				else {
-					self.db = mongojs(db, []);
+					self.db = mongojs( db, [] );
 					self.connection = db;
-					console.log('Connected to database');
-					self.db.getCollectionNames(function (err, collections) {
-						if (err) reject(err);
+					console.log( 'Connected to database' );
+					self.db.getCollectionNames( function ( err, collections ) {
+						if ( err ) reject( err );
 						else {
-							collections = collections.map(function (m) {
-								self.collections.push(m.trim()
-									.toString());
+							collections = collections.map( function ( m ) {
+								self.collections.push( m.trim()
+									.toString() );
 								return m.trim()
 									.toString();
-							})
+							} )
 
-							fulfill(self);
+							fulfill( self );
 						}
-					});
+					} );
 				}
-			})
-	})
+			} )
+	} )
 };
 
 
@@ -63,8 +66,8 @@ DB.prototype.connect = function (uri) {
  * @param  {[type]} collection [description]
  * @return {[type]} [description]
  */
-DB.prototype.collection = function (collection) {
-	return this.db.collection(collection);
+DB.prototype.collection = function ( collection ) {
+	return this.db.collection( collection );
 }
 
 
@@ -80,17 +83,17 @@ DB.prototype.collection = function (collection) {
  * @param  {Function}      callback   A method to execute when the search completes
  * @return {promise}        A promise
  */
-DB.prototype.fetchAllRecords = function (collection, search) {
+DB.prototype.fetchAllRecords = function ( collection, search ) {
 	var self = this;
 	search = search || {};
-	return new Promise(function (success, failure) {
-		self.db.collection(collection)
-			.find(search, function (err, docs) {
-				if (err) failure(err);
+	return new Promise( function ( success, failure ) {
+		self.db.collection( collection )
+			.find( search, function ( err, docs ) {
+				if ( err ) failure( err );
 				else
-					success(docs);
-			});
-	})
+					success( docs );
+			} );
+	} )
 };
 
 /**
@@ -100,21 +103,21 @@ DB.prototype.fetchAllRecords = function (collection, search) {
  * @param  {string}     collection [description]
  * @return {Promise}     [description]
  */
-DB.prototype.createRecord = function (record, collection) {
+DB.prototype.createRecord = function ( record, collection ) {
 	var self = this;
-	return new Promise(function (success, failure) {
-		self.hook(collection, 'beforeSave', record)
-			.then(function (record) {
-				self.db.collection(collection)
-					.insert(record, function (err, doc) {
-						console.log(doc, err);
-						if (err) failure(err);
+	return new Promise( function ( success, failure ) {
+		self.hook( collection, 'beforeSave', record )
+			.then( function ( record ) {
+				self.db.collection( collection )
+					.insert( record, function ( err, doc ) {
+						console.log( doc, err );
+						if ( err ) failure( err );
 						else {
-							success(doc);
+							success( doc );
 						}
-					});
-			})
-	})
+					} );
+			} )
+	} )
 };
 
 /**
@@ -124,30 +127,30 @@ DB.prototype.createRecord = function (record, collection) {
  * @param  {[type]}     collection [description]
  * @return {[type]}     [description]
  */
-DB.prototype.updateRecord = function (record, collection) {
+DB.prototype.updateRecord = function ( record, collection ) {
 	var self = this;
-	return new Promise(function (success, failure) {
-		self.hook(collection, 'beforeSave', record)
-			.then(function (record) {
-				var tosave = _.clone(record);
+	return new Promise( function ( success, failure ) {
+		self.hook( collection, 'beforeSave', record )
+			.then( function ( record ) {
+				var tosave = _.clone( record );
 				delete tosave._id;
-				self.collection(collection)
-					.update({
-						"_id": ObjectId(record._id)
+				self.collection( collection )
+					.update( {
+						"_id": ObjectId( record._id )
 					}, {
 						$set: tosave
-					}, function (err, docs) {
-						if (err)
-							error(err);
+					}, function ( err, docs ) {
+						if ( err )
+							error( err );
 						else {
-							success(docs);
+							success( docs );
 						}
-					})
+					} )
 
-			})
+			} )
 
 
-	})
+	} )
 };
 
 /**
@@ -157,16 +160,16 @@ DB.prototype.updateRecord = function (record, collection) {
  * @param  {[type]}     collection [description]
  * @return {[type]}     [description]
  */
-DB.prototype.deleteRecord = function (_id, collection) {
-	return new Promise(function (success, failure) {
-		self.collection(collection)
-			.remove({
-				"_id": ObjectId(_id)
-			}, function (err, doc) {
-				if (err) failure(err);
-				success(doc);
-			});
-	})
+DB.prototype.deleteRecord = function ( _id, collection ) {
+	return new Promise( function ( success, failure ) {
+		self.collection( collection )
+			.remove( {
+				"_id": ObjectId( _id )
+			}, function ( err, doc ) {
+				if ( err ) failure( err );
+				success( doc );
+			} );
+	} )
 
 };
 
@@ -178,21 +181,22 @@ DB.prototype.deleteRecord = function (_id, collection) {
  * @param  {[type]} data       [description]
  * @return {[type]} [description]
  */
-DB.prototype.hook = function (collection, hook, data) {
+DB.prototype.hook = function ( collection, hook, data ) {
 	var self = this;
-	return new Promise(function (success, failure) {
-		if (self.hooks && self.hooks[collection] && typeof self.hooks[collection][hook] == 'function') {
+	return new Promise( function ( success, failure ) {
+		if ( self.hooks && self.hooks[ collection ] && typeof self.hooks[ collection ][ hook ] == 'function' ) {
 			try {
-				self.hooks[collection][hook](data).then(function (d) {
-					success(d);
-				});
-			} catch (x) {
-				failure(x);
+				self.hooks[ collection ][ hook ]( data )
+					.then( function ( d ) {
+						success( d );
+					} );
+			} catch ( x ) {
+				failure( x );
 			}
 		} else {
-			success(data);
+			success( data );
 		}
-	});
+	} );
 
 
 }
