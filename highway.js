@@ -35,6 +35,9 @@ var Highway = function (settings) {
 	self.mailer = new Email(self.settings.email);
 
 
+	/**
+	PrepareHTTP();
+	**/
 	PrepareHTTP();
 	var db = new DB(settings.uri + '/' + settings.database, settings.hooks);
 	db.connect()
