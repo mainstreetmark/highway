@@ -35,9 +35,6 @@ var Highway = function (settings) {
 	self.mailer = new Email(self.settings.email);
 
 
-	/**
-	PrepareHTTP();
-	**/
 	PrepareHTTP();
 	var db = new DB(settings.uri + '/' + settings.database, settings.hooks);
 	db.connect()
@@ -397,6 +394,7 @@ var Highway = function (settings) {
 };
 
 Highway.prototype.LoadRoutes = function (routes) {
+	var _ = require('underscore');
 	if (!_.isArray(routes)) {
 		routes = [routes];
 	}
