@@ -40,11 +40,6 @@ var Highway = function ( settings ) {
 			console.log( 'Unable to connect to database: ', err );
 		} )
 
-	function SetUpREST( collection, sockets ) {
-
-		var router = new reststop( collection, this.db, sockets );
-	}
-
 	function SetUpSockets( collection ) {
 		self.sockets[ collection ].on( 'connection', function ( socket ) {
 			socket.on( 'init', function ( search ) {
