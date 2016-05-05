@@ -111,7 +111,7 @@ var Highway = function ( settings ) {
 				self.settings.http.use( '/', new reststop( collection, self.db, self.io.of( '/' + settings.database + '/' + collection ) ) );
 			}
 		}
-		self.settings.http.use( '/', self.router );
+
 		if ( typeof self.settings.onComplete == 'function' ) {
 			self.settings.onComplete( self, _, ObjectId );
 		}
