@@ -12,7 +12,7 @@ var reststop = function ( collection, db, sockets ) {
 		.post( function ( req, res ) {
 			db.createRecord( req.body, collection )
 				.then( function ( docs ) {
-					//io.of()
+					sockets.emit( 'child_added', docs );
 					res.json( docs )
 				} )
 		} );
@@ -29,13 +29,14 @@ var reststop = function ( collection, db, sockets ) {
 		.put( function ( req, res ) {
 			db.updateRecord( req.params, collection )
 				.then( function ( doc ) {
-					// io here too
+					sockets.emit( 'child_changed', doc );
 					res.json( doc );
 				} )
 		} )
 		.delete( function ( req, res ) {
 			db.deleteRecord( req.params._id, collection )
 				.then( function () {
+					sockets.emit( 'child_removed', req.params );
 					req.json( {
 						message: 'Successfully deleted'
 					} );
