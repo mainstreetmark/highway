@@ -1,43 +1,46 @@
-var express = require('express');
-
-var reststop = function(collection, db, sockets) {
-
+var reststop = function ( collection, db, sockets ) {
+	var express = require( 'express' );
 	var router = express.Router();
 
-	router.route(collection)
-		.get(function(req, res) {
-			fetchAllRecords(collection, {}, function(err, docs) {
-				res.json(docs);
-			});
-		})
-		.post(function(req, res) {
-			createRecord(req.body, collection, function(err, docs) {
-				io.of('/' + collection).emit('child_added', docs);
-				res.json(docs)
-			})
-		});
+	router.route( collection )
+		.get( function ( req, res ) {
+			db.fetchAllRecords( collection, {} )
+				.then( function ( docs ) {
+					res.json( docs );
+				} )
+		} )
+		.post( function ( req, res ) {
+			db.createRecord( req.body, collection )
+				.then( function ( docs ) {
+					//io.of()
+					res.json( docs )
+				} )
+		} );
 
-	router.route(collection + '/:_id')
-		.get(function(req, res) {
-			self.db.collection(collection).find({
-				"_id": ObjectId(req.params._id)
-			}, function(err, doc) {
-				res.json(doc);
-			})
-		})
-		.put(function(req, res) {
-			var record = req.params;
-			updateRecord(record, collection, function(err, doc) {
-				res.json(doc);
-			});
-		})
-		.delete(function(req, res) {
-			deleteRecord(req.params._id, collection, function(err) {
-				req.json({
-					message: 'Successfully deleted'
-				});
-			});
-		});
+	router.route( collection + '/:_id' )
+		.get( function ( req, res ) {
+			db.fetchAllRecords( collection, {
+					"_id": req.params._id
+				} )
+				.then( function ( doc ) {
+					res.json( doc );
+				} )
+		} )
+		.put( function ( req, res ) {
+			db.updateRecord( req.params, collection )
+				.then( function ( doc ) {
+					// io here too
+					res.json( doc );
+				} )
+		} )
+		.delete( function ( req, res ) {
+			db.deleteRecord( req.params._id, collection )
+				.then( function () {
+					req.json( {
+						message: 'Successfully deleted'
+					} );
+				} )
+		} );
 
 	return router;
 }
