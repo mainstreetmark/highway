@@ -2,7 +2,7 @@ var reststop = function ( collection, db, sockets ) {
 	var express = require( 'express' );
 	var router = express.Router();
 
-	router.route( collection )
+	router.route( '/' )
 		.get( function ( req, res ) {
 			db.fetchAllRecords( collection, {} )
 				.then( function ( docs ) {
@@ -17,7 +17,7 @@ var reststop = function ( collection, db, sockets ) {
 				} )
 		} );
 
-	router.route( collection + '/:_id' )
+	router.route( '/:_id' )
 		.get( function ( req, res ) {
 			db.fetchAllRecords( collection, {
 					"_id": req.params._id
