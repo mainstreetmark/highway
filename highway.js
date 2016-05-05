@@ -180,6 +180,7 @@ var Highway = function (settings) {
 			extended: true
 		}));
 		self.settings.http.use(bodyParser.json());
+		return true;
 	}
 
 	function listCollectionsCallback(db) {
@@ -394,6 +395,7 @@ var Highway = function (settings) {
 };
 
 Highway.prototype.LoadRoutes = function (routes) {
+	var self = this;
 	var _ = require('underscore');
 	if (!_.isArray(routes)) {
 		routes = [routes];
@@ -401,7 +403,7 @@ Highway.prototype.LoadRoutes = function (routes) {
 	var route;
 	for (var i in routes) {
 		route = routes[i];
-		this.settings.http[route.method](route.path, route.handler);
+		this.settings.http[route.method](route.path, route['handler'](this));
 	}
 };
 
