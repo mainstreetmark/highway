@@ -55,30 +55,24 @@ var Highway = function ( settings ) {
 			} )
 
 			socket.on( 'update', function ( record ) {
-				updateRecord( record, collection, function ( err, docs ) {
-					socket.broadcast.emit( 'child_changed', record );
+				self.db.updateRecord( record, collection).then(function( docs ) {
+					socket.broadcast.emit( 'child_changed', docs );
 				} );
 			} )
 
 			socket.on( 'create', function ( record, fn ) {
-				createRecord( record, collection, function ( err, docs ) {
-					fn( docs );
-					socket.emit( 'child_added', record );
-				} );
+				self.db.createRecord( record, collection ).then(function(doc){
+					fn( doc );
+					socket.emit('child_added', doc);
+				})
 			} )
 
 			socket.on( 'destroy', function ( record ) {
-				deleteRecord( record._id, collection, function ( err, doc ) {
+				self.db.deleteRecord( record._id, collection).then(function ( doc ) {
 					socket.broadcast.emit( 'child_changed', doc );
 				} );
 			} )
 		} )
-	}
-
-	function createRecord( record, collection, callback ) {
-		callback = typeof callback == 'function' ? callback : function ( err, docs ) {};
-		self.db.collection( collection )
-			.insert( record, callback );
 	}
 
 	function updateRecord( record, collection, callback ) {
