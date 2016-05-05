@@ -108,7 +108,7 @@ var Highway = function ( settings ) {
 			if ( collection != '' && collection != 'system.indexes' ) {
 				self.sockets[ collection ] = self.io.of( '/' + settings.database + '/' + collection );
 				SetUpSockets( collection );
-				self.settings.http.use( '/', new reststop( collection, self.db, self.io.of( '/' + settings.database + '/' + collection ) ) );
+				self.settings.http.use( '/' + collection, new reststop( collection, self.db, self.io.of( '/' + settings.database + '/' + collection ) ) );
 			}
 		}
 
