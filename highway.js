@@ -40,6 +40,11 @@ var Highway = function ( settings ) {
 			console.log( 'Unable to connect to database: ', err );
 		} )
 
+	function SetUpREST( collection, sockets ) {
+
+		var router = new reststop( collection, this.db, sockets );
+	}
+
 	function SetUpSockets( collection ) {
 		self.sockets[ collection ].on( 'connection', function ( socket ) {
 			socket.on( 'init', function ( search ) {
@@ -50,24 +55,30 @@ var Highway = function ( settings ) {
 			} )
 
 			socket.on( 'update', function ( record ) {
-				self.db.updateRecord( record, collection).then(function( docs ) {
-					socket.broadcast.emit( 'child_changed', docs );
+				updateRecord( record, collection, function ( err, docs ) {
+					socket.broadcast.emit( 'child_changed', record );
 				} );
 			} )
 
 			socket.on( 'create', function ( record, fn ) {
-				self.db.createRecord( record, collection ).then(function(doc){
-					fn( doc );
-					socket.emit('child_added', doc);
-				})
-			} )
+				createRecord( record, collection, function ( err, docs ) {
+					fn( docs );
+					socket.emit( 'child_added', record );
+				} );
+			} );
 
 			socket.on( 'destroy', function ( record ) {
-				self.db.deleteRecord( record._id, collection).then(function ( doc ) {
+				deleteRecord( record._id, collection, function ( err, doc ) {
 					socket.broadcast.emit( 'child_changed', doc );
 				} );
-			} )
-		} )
+			} );
+		} );
+	}
+
+	function createRecord( record, collection, callback ) {
+		callback = typeof callback == 'function' ? callback : function ( err, docs ) {};
+		self.db.collection( collection )
+			.insert( record, callback );
 	}
 
 	function updateRecord( record, collection, callback ) {
@@ -79,7 +90,7 @@ var Highway = function ( settings ) {
 				"_id": ObjectId( record._id )
 			}, {
 				$set: tosave
-			}, callback )
+			}, callback );
 	}
 
 	function deleteRecord( _id, collection, callback ) {
@@ -99,10 +110,6 @@ var Highway = function ( settings ) {
 				SetUpSockets( collection );
 				self.settings.http.use( '/' + collection, new reststop( collection, self.db, self.io.of( '/' + settings.database + '/' + collection ) ) );
 			}
-		}
-
-		if ( typeof self.settings.onComplete == 'function' ) {
-			self.settings.onComplete( self, _, ObjectId );
 		}
 	}
 
@@ -144,7 +151,6 @@ var Highway = function ( settings ) {
 		var LocalStrategy = require( 'passport-local' )
 			.Strategy;
 		var session = require( 'express-session' );
-		var MongoStore = require( 'connect-mongostore' )( session );
 		var secret = self.settings.auth_secret || 'highwaysecret';
 
 		if ( !strategy.routes )
@@ -158,175 +164,172 @@ var Highway = function ( settings ) {
 			logout: strategy.routes.logout || '/logout',
 			home: strategy.routes.home || '/'
 		};
-		if ( !strategy.homeCallback ) {
-			strategy.homeCallback = function ( req, res ) {
-				if ( !req.session || !req.session.passport.user ) {
-					res.redirect( '/login.html' );
-				} else {
-					res.send( 'you are logged in!' );
-				}
-			};
-		}
 
+		var sessionstore = require( './src/auth/session_store.js' );
+		var store = new sessionstore( session, self.settings.uri + '/' + self.settings.database )
+			.then( function ( sstore ) {
+				self.settings.http.use( session( {
+					secret: secret,
+					store: sstore, // use current database for sessions
+					resave: true,
+					saveUninitialized: true
+				} ) );
 
-		var store = new MongoStore( {
-			host: self.settings.uri,
-			'db': self.settings.database
-		}, function () {} )
-		self.settings.http.use( session( {
-			secret: secret,
-			store: store, // use current database for sessions
-			resave: true,
-			saveUninitialized: true
-		} ) );
-
-		passport.use( new LocalStrategy( {
-				usernameField: 'email',
-				passReqToCallback: true
-			},
-			function ( req, username, password, done ) {
-				self.db.collection( 'users' )
-					.findOne( {
-						email: username
-					}, function ( err, user ) {
-						if ( err ) {
-							return done( err );
-						}
-						if ( !user ) {
-							return done( null, false, {
-								message: 'Incorrect email.'
+				passport.use( new LocalStrategy( {
+						usernameField: 'email',
+						passReqToCallback: true
+					},
+					function ( req, username, password, done ) {
+						self.db.collection( 'users' )
+							.findOne( {
+								email: username
+							}, function ( err, user ) {
+								if ( err ) {
+									return done( err );
+								}
+								if ( !user ) {
+									return done( null, false, {
+										message: 'Incorrect email.'
+									} );
+								}
+								var bcrypt = require( 'bcrypt' );
+								var salt = bcrypt.genSaltSync( 10 );
+								if ( !bcrypt.compareSync( password, user.password ) ) {
+									return done( null, false, {
+										message: 'Incorrect password.'
+									} );
+								}
+								return done( null, user );
 							} );
-						}
-						var bcrypt = require( 'bcrypt' );
-						var salt = bcrypt.genSaltSync( 10 );
-						if ( !bcrypt.compareSync( password, user.password ) ) {
-							return done( null, false, {
-								message: 'Incorrect password.'
-							} );
-						}
-						return done( null, user );
-					} );
-			}
-		) );
+					}
+				) );
 
-		passport.serializeUser( function ( user, done ) {
-			done( null, user );
-		} );
-
-		passport.deserializeUser( function ( user, done ) {
-			delete user.password;
-			done( null, user );
-		} );
-
-
-		self.settings.http.use( passport.initialize() );
-		self.settings.http.use( passport.session() );
-
-		self.settings.http.get( routes.auth, function ( req, res ) {
-			var loggedIn = req.isAuthenticated();
-			if ( !loggedIn ) {
-				res.send( 'false' );
-				return;
-			} else {
-				res.send( JSON.stringify( req.session.passport.user ) );
-				return;
-			}
-		} );
-
-
-		self.settings.http.post( routes.auth,
-			passport.authenticate( 'local', {
-				failureRedirect: routes.login
-			} ),
-			function ( req, res ) {
-				res.cookie( 'user', req.session.passport.user._id.toString(), {
-					maxAge: 31536000000,
-					httpOnly: false
+				passport.serializeUser( function ( user, done ) {
+					done( null, user );
 				} );
-				res.redirect( routes.home );
-			}
-		);
 
-		self.settings.http.get( routes.logout, function ( req, res ) {
-			res.cookie( 'user', strategy.defaultUser || false, {
-				maxAge: 31536000000,
-				httpOnly: false
-			} );
-			req.logout();
-			res.redirect( routes.home );
+				passport.deserializeUser( function ( user, done ) {
+					delete user.password;
+					done( null, user );
+				} );
 
-		} );
 
-		self.settings.http.post( '/highway/user', function ( req, res ) {
-			var bcrypt = require( 'bcrypt' );
-			var salt = bcrypt.genSaltSync( 10 );
-			if ( !req.body.email ) {
-				res.send( 'Error: No email provided' );
-				return;
-			}
-			if ( !req.body.password ) {
-				res.send( 'Error: No password provided' );
-				return;
-			}
-			var saltedpassword = bcrypt.hashSync( req.body.password, salt );
-			var user = {
-				email: req.body.email,
-				password: saltedpassword,
-				name: req.body.name
-			};
-			self.db.collection( 'users' )
-				.insert( user, function ( err, doc ) {
-					res.cookie( 'user', doc._id, {
+				self.settings.http.use( passport.initialize() );
+				self.settings.http.use( passport.session() );
+
+				self.settings.http.get( routes.auth, function ( req, res ) {
+					var loggedIn = req.isAuthenticated();
+					if ( !loggedIn ) {
+						res.send( 'false' );
+						return;
+					} else {
+						res.send( JSON.stringify( req.session.passport.user ) );
+						return;
+					}
+				} );
+
+
+				self.settings.http.post( routes.auth,
+					passport.authenticate( 'local', {
+						failureRedirect: routes.login
+					} ),
+					function ( req, res ) {
+						res.cookie( 'user', req.session.passport.user._id.toString(), {
+							maxAge: 31536000000,
+							httpOnly: false
+						} );
+						res.redirect( routes.home );
+					}
+				);
+
+				self.settings.http.get( routes.logout, function ( req, res ) {
+					res.cookie( 'user', strategy.defaultUser || false, {
 						maxAge: 31536000000,
 						httpOnly: false
 					} );
+					req.logout();
 					res.redirect( routes.home );
-				} );
-		} );
 
-		self.settings.http.get( '/password-reset', function ( req, res ) {
-			var fs = require( 'fs' );
-			if ( req.query.token ) {
-				self.db.collection( 'users' )
-					.find( {
-						"password_token": req.query.token
-					}, function ( err, doc ) {
-						fs.readFile( __dirname + '/templates/web/password_reset/form.html', 'utf8', function ( err, data ) {
+				} );
+
+				self.settings.http.post( '/highway/user', function ( req, res ) {
+					var bcrypt = require( 'bcrypt' );
+					var salt = bcrypt.genSaltSync( 10 );
+					if ( !req.body.email ) {
+						res.send( 'Error: No email provided' );
+						return;
+					}
+					if ( !req.body.password ) {
+						res.send( 'Error: No password provided' );
+						return;
+					}
+					var saltedpassword = bcrypt.hashSync( req.body.password, salt );
+					var user = {
+						email: req.body.email,
+						password: saltedpassword,
+						name: req.body.name
+					};
+					self.db.collection( 'users' )
+						.insert( user, function ( err, doc ) {
+							res.cookie( 'user', doc._id, {
+								maxAge: 31536000000,
+								httpOnly: false
+							} );
+							res.redirect( routes.home );
+						} );
+				} );
+
+				self.settings.http.get( '/password-reset', function ( req, res ) {
+					var fs = require( 'fs' );
+					if ( req.query.token ) {
+						self.db.collection( 'users' )
+							.find( {
+								"password_token": req.query.token
+							}, function ( err, doc ) {
+								fs.readFile( __dirname + '/templates/web/password_reset/form.html', 'utf8', function ( err, data ) {
+									res.send( _.template( data )() );
+								} );
+							} );
+					} else if ( req.query.email ) {
+						self.db.collection( 'users' )
+							.find( {
+								"email": req.query.email
+							}, function ( err, doc ) {
+								if ( err ) throw err;
+								var token = Math.random()
+									.toString( 35 )
+									.substring( 2, 32 );
+								updateRecord( _.extend( doc[ 0 ], {
+									password_token: token
+								} ), 'users' );
+								self.SendEmail( req.query.email, 'passwordReset', {
+									"_id": doc[ 0 ]._id,
+									"token": token
+								} );
+								var template = _.template( fs.readFileSync( __dirname + '/templates/web/password_reset/email_sent.html' ) );
+								res.send( template() );
+							} );
+					} else {
+						fs.readFile( __dirname + '/templates/web/password_reset/request.html', 'utf8', function ( err, data ) {
 							res.send( _.template( data )() );
 						} );
-					} );
-			} else if ( req.query.email ) {
-				self.db.collection( 'users' )
-					.find( {
-						"email": req.query.email
-					}, function ( err, doc ) {
-						if ( err ) throw err;
-						var token = Math.random()
-							.toString( 35 )
-							.substring( 2, 32 );
-						updateRecord( _.extend( doc[ 0 ], {
-							password_token: token
-						} ), 'users' );
-						self.SendEmail( req.query.email, 'passwordReset', {
-							"_id": doc[ 0 ]._id,
-							"token": token
-						} );
-						var template = _.template( fs.readFileSync( __dirname + '/templates/web/password_reset/email_sent.html' ) );
-						res.send( template() );
-					} );
-			} else {
-				fs.readFile( __dirname + '/templates/web/password_reset/request.html', 'utf8', function ( err, data ) {
-					res.send( _.template( data )() );
+					}
+
 				} );
-			}
-
-		} );
 
 
-		if ( strategy.options.ForceRootAuth ) {
-			self.settings.http.get( routes.home, strategy.homeCallback );
-		}
+				if ( strategy.options.ForceRootAuth ) {
+					self.settings.http.get( routes.home, strategy.homeCallback );
+				}
 
+
+				if ( typeof self.settings.onComplete == 'function' ) {
+					self.settings.onComplete( self, _, ObjectId );
+				}
+
+			}, function ( err ) {
+				console.log( 'error', err );
+			} );
 	}
 
 	return self;
@@ -341,7 +344,7 @@ Highway.prototype.LoadRoutes = function ( routes ) {
 	var route;
 	for ( var i in routes ) {
 		route = routes[ i ];
-		this.settings.http[ route.method ]( route.path, route[ 'handler' ]( this ) );
+		this.settings.http[ route.method ]( route.path, route.handler( this ) );
 	}
 };
 
