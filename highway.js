@@ -38,7 +38,7 @@ var Highway = function ( settings ) {
 			listCollectionsCallback( d );
 		}, function ( err ) {
 			console.log( 'Unable to connect to database: ', err );
-		} );
+		} )
 
 	function SetUpREST( collection, sockets ) {
 
@@ -48,25 +48,17 @@ var Highway = function ( settings ) {
 	function SetUpSockets( collection ) {
 		self.sockets[ collection ].on( 'connection', function ( socket ) {
 			socket.on( 'init', function ( search ) {
-				self.db.fetchAllRecords( collection, search )
+				self.db.fetchAllRecords( collection, {} )
 					.then( function ( docs ) {
 						socket.emit( 'all_records', docs );
-
-						if ( search != {} ) { // backfill the rest
-							self.db.fetchAllRecords( collection, {} )
-								.then( function ( docs ) {
-									socket.emit( 'all_records', docs );
-								} );
-						}
-
-					} );
-			} );
+					} )
+			} )
 
 			socket.on( 'update', function ( record ) {
 				updateRecord( record, collection, function ( err, docs ) {
 					socket.broadcast.emit( 'child_changed', record );
 				} );
-			} );
+			} )
 
 			socket.on( 'create', function ( record, fn ) {
 				createRecord( record, collection, function ( err, docs ) {
