@@ -1,7 +1,7 @@
 var SocketServer = function ( io, collection, db ) {
 	this.collection = collection;
-	this.sockets = io.of( '/' + settings.database + '/' + collection );
-	sockets[ collection ].on( 'connection', function ( socket ) {
+	this.socket = io.of( '/roadtrip/' + collection );
+	this.socket.on( 'connection', function ( socket ) {
 
 
 		/**
@@ -29,8 +29,8 @@ var SocketServer = function ( io, collection, db ) {
 			db.updateRecord( record, collection )
 				.then( function ( doc ) {
 					socket.broadcast.emit( 'child_changed', record );
-				} )
-		} )
+				} );
+		} );
 
 		/**
 		 * [on description]

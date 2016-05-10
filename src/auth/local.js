@@ -3,7 +3,7 @@
 //
 // This is goddamn spaghetti.  It needs a lot of cleanup.
 
-var Local = function ( strategy, self ) {
+var Local = function ( strategy, self, _, ObjectId ) {
 
 	var passport = require( 'passport' );
 	var LocalStrategy = require( 'passport-local' )
@@ -179,7 +179,7 @@ var Local = function ( strategy, self ) {
 				self.settings.http.get( routes.home, strategy.homeCallback );
 			}
 
-
+			console.log( 'Hello, I am here' );
 			if ( typeof self.settings.onComplete == 'function' ) {
 				self.settings.onComplete( self, _, ObjectId );
 			}
