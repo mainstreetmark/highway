@@ -15,8 +15,8 @@ var SocketServer = function ( io, collection, db ) {
 			db.fetchAllRecords( collection, search )
 				.then( function ( docs ) {
 					socket.emit( 'all_records', docs );
-				} )
-		} )
+				} );
+		} );
 
 		/**
 		 * [on description]
