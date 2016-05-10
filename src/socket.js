@@ -11,10 +11,18 @@ var SocketServer = function ( io, collection, db ) {
 		 * @param  {[type]} function (             search [description]
 		 * @return {[type]} [description]
 		 */
-		socket.on( 'init', function ( search ) {
-			db.fetchAllRecords( collection, search )
+		socket.on( 'init', function ( options ) {
+			db.fetchAllRecords( collection, options )
 				.then( function ( docs ) {
 					socket.emit( 'all_records', docs );
+
+					if ( options && options != {} ) {
+						db.fetchAllRecords( collection )
+							.then( function ( docs ) {
+								socket.emit( 'all_records', docs );
+							} );
+					}
+
 				} );
 		} );
 

@@ -81,12 +81,15 @@ DB.prototype.collection = function ( collection ) {
  * @param  {Function}      callback   A method to execute when the search completes
  * @return {promise}        A promise
  */
-DB.prototype.fetchAllRecords = function ( collection, search ) {
+DB.prototype.fetchAllRecords = function ( collection, options ) {
 	var self = this;
-	search = search || {};
+	options = options || {};
+	var search = options.search || {};
+	var limit = options.limit || Infinity;
 	return new Promise( function ( success, failure ) {
 		self.db.collection( collection )
-			.find( search, function ( err, docs ) {
+			.find( search )
+			.limit( limit, function ( err, docs ) {
 				if ( err ) failure( err );
 				else
 					success( docs );
