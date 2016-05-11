@@ -29,6 +29,15 @@ var SocketServer = function ( io, collection, db ) {
 				} );
 		} );
 
+		socket.on( 'search', function ( options ) {
+			db.fetchAllRecords( collection, options )
+				.then( function ( docs ) {
+					socket.emit( 'supplement', docs );
+				}, function ( error ) {
+					socket.emit( 'error', error );
+				} );
+		} );
+
 		/**
 		 * [on description]
 		 * @method on
