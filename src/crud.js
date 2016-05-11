@@ -7,6 +7,8 @@ var mongojs = require( 'mongojs' );
 // ObjectId to look for records by ID (_id)
 var ObjectId = require( 'mongojs' )
 	.ObjectId;
+var _ = require( 'underscore' );
+
 
 var DB = function ( uri, hooks ) {
 	if ( !uri ) {

@@ -15,17 +15,6 @@ var SocketServer = function ( io, collection, db ) {
 			db.fetchAllRecords( collection, options )
 				.then( function ( docs ) {
 					socket.emit( 'all_records', docs );
-
-					if ( options && options != {} ) {
-						var secondOptions = {};
-						if ( options.limit )
-							secondOptions.skip = options.limit;
-						db.fetchAllRecords( collection, secondOptions )
-							.then( function ( docs ) {
-								socket.emit( 'all_records', docs );
-							} );
-					}
-
 				} );
 		} );
 
@@ -49,6 +38,8 @@ var SocketServer = function ( io, collection, db ) {
 			db.updateRecord( record, collection )
 				.then( function ( doc ) {
 					socket.broadcast.emit( 'child_changed', record );
+				}, function ( error ) {
+					console.log( 'error', error );
 				} );
 		} );
 
