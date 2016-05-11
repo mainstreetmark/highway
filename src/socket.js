@@ -55,8 +55,8 @@ var SocketServer = function ( io, collection, db ) {
 				.then( function ( docs ) {
 					fn( docs );
 					socket.emit( 'child_added', docs[ 0 ] );
-				} )
-		} )
+				} );
+		} );
 
 		/**
 		 * [on description]
@@ -69,14 +69,14 @@ var SocketServer = function ( io, collection, db ) {
 			db.deleteRecord( record._id, collection )
 				.then( function ( doc ) {
 					socket.broadcast.emit( 'child_changed', doc );
-				} )
-		} )
-	} )
-}
+				} );
+		} );
+	} );
+};
 
 SocketServer.prototype.broadcast = function ( message ) {
-	this.sockets.emit( message );
-}
+	this.socket.emit( message );
+};
 
 
 module.exports = SocketServer;
