@@ -86,7 +86,7 @@ DB.prototype.fetchAllRecords = function ( collection, options ) {
 	options = options || {};
 	var search = options.search || {};
 	var limit = options.limit || Infinity;
-	var skip = limit == Infinity ? 0 : limit;
+	var skip = options.skip || 0;
 	return new Promise( function ( success, failure ) {
 		self.db.collection( collection )
 			.find( search )
