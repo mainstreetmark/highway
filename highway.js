@@ -21,10 +21,8 @@ var Highway = function ( settings ) {
 		throw new Error( 'No settings provided' );
 	}
 
-	settings = settings || {};
-
 	var self = this;
-	self.settings = _.defaults( settings, defaults );
+	self.settings = _.defaults( settings || {}, defaults );
 	self.io = self.settings.io;
 	self.sockets = {};
 	self.mailer = new Email( self.settings.email );
@@ -40,20 +38,14 @@ var Highway = function ( settings ) {
 			console.log( 'Unable to connect to database: ', err );
 		} );
 
-	function SetUpREST( collection, sockets ) {
-
-		var router = new reststop( collection, this.db, sockets );
-	}
-
-
 	function collectionList() {
-		self.router = express.Router();
 		collections = self.db.collections;
 		while ( ( collection = collections.pop() ) !== undefined ) {
 			if ( collection != '' && collection != 'system.indexes' ) {
 				self.sockets[ collection ] = self.io.of( '/' + settings.database + '/' + collection );
 				new SocketServer( self.io, collection, self.db ); //SetUpSockets( collection );
-				self.settings.http.use( '/' + collection, new reststop( collection, self.db, self.io.of( '/' + settings.database + '/' + collection ) ) );
+				self.settings.http.use( '/' +
+					settings.database + '/' + collection, new reststop( collection, self.db, self.io.of( '/' + settings.database + '/' + collection ) ) );
 			}
 		}
 	}
