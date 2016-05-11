@@ -3,13 +3,16 @@
 //
 // This is goddamn spaghetti.  It needs a lot of cleanup.
 
-var Local = function ( strategy, self, _, ObjectId ) {
+var Local = function ( strategy, self ) {
 
 	var passport = require( 'passport' );
 	var LocalStrategy = require( 'passport-local' )
 		.Strategy;
 	var session = require( 'express-session' );
 	var secret = self.settings.auth_secret || 'highwaysecret';
+	var _ = require( 'underscore' );
+	var ObjectId = require( 'mongojs' )
+		.ObjectId;
 
 	strategy.routes = strategy.routes || {};
 	strategy.options = strategy.options || {};
@@ -21,7 +24,7 @@ var Local = function ( strategy, self, _, ObjectId ) {
 		home: strategy.routes.home || '/'
 	};
 
-	var SessionStore = require( './src/auth/session_store.js' );
+	var SessionStore = require( './session_store.js' );
 	var store = new SessionStore( session, self.settings.uri + '/' + self.settings.database )
 		.then( function ( sstore ) {
 
@@ -179,7 +182,6 @@ var Local = function ( strategy, self, _, ObjectId ) {
 				self.settings.http.get( routes.home, strategy.homeCallback );
 			}
 
-			console.log( 'Hello, I am here' );
 			if ( typeof self.settings.onComplete == 'function' ) {
 				self.settings.onComplete( self, _, ObjectId );
 			}
@@ -187,6 +189,7 @@ var Local = function ( strategy, self, _, ObjectId ) {
 		}, function ( err ) {
 			console.log( 'error', err );
 		} );
+
 
 
 }
