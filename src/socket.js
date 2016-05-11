@@ -17,7 +17,10 @@ var SocketServer = function ( io, collection, db ) {
 					socket.emit( 'all_records', docs );
 
 					if ( options && options != {} ) {
-						db.fetchAllRecords( collection )
+						var secondOptions = {};
+						if ( options.limit )
+							secondOptions.skip = options.limit;
+						db.fetchAllRecords( collection, secondOptions )
 							.then( function ( docs ) {
 								socket.emit( 'all_records', docs );
 							} );
