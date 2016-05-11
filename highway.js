@@ -33,22 +33,23 @@ var Highway = function ( settings ) {
 	db.connect()
 		.then( function ( d ) {
 			self.db = d;
-			listCollectionsCallback( d );
+			for ( var i in self.settings.auth ) {
+				handleAuthentication( self.settings.auth[ i ] ); // This requires self.db to be populated, so it has to live here for now
+			}
+			collections = self.db.collections;
+			while ( ( collection = collections.pop() ) !== undefined ) {
+				if ( collection != '' && collection != 'system.indexes' ) {
+					self.sockets[ collection ] = self.io.of( '/' + settings.database + '/' + collection );
+					new SocketServer( self.io, collection, self.db ); //SetUpSockets( collection );
+					self.settings.http.use( '/' +
+						settings.database + '/' + collection, new reststop( collection, self.db, self.io.of( '/' + settings.database + '/' + collection ) ) );
+				}
+			}
 		}, function ( err ) {
 			console.log( 'Unable to connect to database: ', err );
 		} );
 
-	function collectionList() {
-		collections = self.db.collections;
-		while ( ( collection = collections.pop() ) !== undefined ) {
-			if ( collection != '' && collection != 'system.indexes' ) {
-				self.sockets[ collection ] = self.io.of( '/' + settings.database + '/' + collection );
-				new SocketServer( self.io, collection, self.db ); //SetUpSockets( collection );
-				self.settings.http.use( '/' +
-					settings.database + '/' + collection, new reststop( collection, self.db, self.io.of( '/' + settings.database + '/' + collection ) ) );
-			}
-		}
-	}
+
 
 	function PrepareHTTP() {
 		if ( !self.settings.http )
@@ -63,13 +64,6 @@ var Highway = function ( settings ) {
 		} ) );
 		self.settings.http.use( bodyParser.json() );
 		return true;
-	}
-
-	function listCollectionsCallback( db ) {
-		for ( var i in self.settings.auth ) {
-			handleAuthentication( self.settings.auth[ i ] ); // This requires self.db to be populated, so it has to live here for now
-		}
-		collectionList();
 	}
 
 	function handleAuthentication( strategy ) {
