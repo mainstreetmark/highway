@@ -18,10 +18,11 @@ var SocketServer = function ( io, collection, db ) {
 				} );
 		} );
 
-		socket.on( 'search', function ( options ) {
+		socket.on( 'search', function ( options, fn ) {
 			db.fetchAllRecords( collection, options )
 				.then( function ( docs ) {
-					socket.emit( 'supplement', docs );
+					fn( docs );
+					socket.emit( 'search_results', docs );
 				}, function ( error ) {
 					socket.emit( 'error', error );
 				} );
