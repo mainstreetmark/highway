@@ -52,7 +52,7 @@
   },
   "devDependencies": {
     "blanket": "^1.1.9",
-    "expect": "^1.18.0",
+    "expect.js": "^0.3.1",
     "mocha-lcov-reporter": "^1.2.0"
   }
 }
