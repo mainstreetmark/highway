@@ -197,7 +197,7 @@ DB.prototype.hook = function ( collection, hook, data ) {
 	return new Promise( function ( success, failure ) {
 		if ( self.hooks && self.hooks[ collection ] && typeof self.hooks[ collection ][ hook ] == 'function' ) {
 			try {
-				self.hooks[ collection ][ hook ]( data )
+				self.hooks[ collection ][ hook ]( self, data )
 					.then( function ( d ) {
 						success( d );
 					} );
