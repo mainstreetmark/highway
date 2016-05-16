@@ -30,7 +30,7 @@ var Highway = function ( settings ) {
 
 
 	PrepareHTTP();
-	var db = new DB( settings.uri + '/' + settings.database, settings.hooks );
+	var db = new DB( settings.uri + '/' + settings.database, settings.hooks, self );
 	db.connect()
 		.then( function ( d ) {
 			self.db = d;

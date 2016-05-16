@@ -10,12 +10,13 @@ var ObjectId = require( 'mongojs' )
 var _ = require( 'underscore' );
 
 
-var DB = function ( uri, hooks ) {
+var DB = function ( uri, hooks, parent ) {
 	if ( !uri ) {
 		console.log( 'No URI provided. No database connection available' );
 	}
 	this.uri = uri;
 	this.hooks = hooks || {};
+	this.highway = parent;
 	this.collections = [];
 	this.db;
 
