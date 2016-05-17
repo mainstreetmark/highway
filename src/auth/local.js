@@ -32,7 +32,8 @@ var Local = function ( strategy, self ) {
 				secret: secret,
 				store: sstore, // use current database for sessions
 				resave: true,
-				saveUninitialized: true
+				saveUninitialized: true,
+				expires: 60 * 60 * 24 * 7 * 52 * 5 * 1000
 			} ) );
 
 			passport.use( new LocalStrategy( {
@@ -94,19 +95,11 @@ var Local = function ( strategy, self ) {
 					failureRedirect: routes.login
 				} ),
 				function ( req, res ) {
-					res.cookie( 'user', req.session.passport.user._id.toString(), {
-						maxAge: 31536000000,
-						httpOnly: false
-					} );
 					res.redirect( routes.home );
 				}
 			);
 
 			self.settings.http.get( routes.logout, function ( req, res ) {
-				res.cookie( 'user', strategy.defaultUser || false, {
-					maxAge: 31536000000,
-					httpOnly: false
-				} );
 				req.logout();
 				res.redirect( routes.home );
 
@@ -131,10 +124,6 @@ var Local = function ( strategy, self ) {
 				};
 				self.db.collection( 'users' )
 					.insert( user, function ( err, doc ) {
-						res.cookie( 'user', doc._id, {
-							maxAge: 31536000000,
-							httpOnly: false
-						} );
 						res.redirect( routes.home );
 					} );
 			} );
