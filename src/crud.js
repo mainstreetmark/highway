@@ -1,10 +1,7 @@
 var Promise = require( 'promise' );
 
-var MongoClient = require( 'mongodb' )
-	.MongoClient;
-
 var mongojs = require( 'mongojs' );
-// ObjectId to look for records by ID (_id)
+
 var ObjectId = require( 'mongojs' )
 	.ObjectId;
 var _ = require( 'underscore' );
@@ -18,7 +15,6 @@ var DB = function ( uri, hooks, parent ) {
 	this.hooks = hooks || {};
 	this.highway = parent;
 	this.collections = [];
-	this.db;
 
 	function sanitizeURI( uri ) {
 		return uri.replace( 'mongodb://', '' );
@@ -32,31 +28,22 @@ var DB = function ( uri, hooks, parent ) {
  * Connect to a mongo database and return a promise
  * @method connect
  * @param  {string} uri An optional uri to connect to.
- * @return {instance} An instance of MongoClient
+ * @return {instance} A promise
  */
 DB.prototype.connect = function ( uri ) {
 	var self = this;
 	return new Promise( function ( fulfill, reject ) {
-		MongoClient.connect( 'mongodb://' + self.uri,
-			function ( err, db ) {
-				if ( err ) reject( err );
-				else {
-					self.db = mongojs( db, [] );
-					self.connection = db;
-					self.db.getCollectionNames( function ( err, collections ) {
-						if ( err ) reject( err );
-						else {
-							collections = collections.map( function ( m ) {
-								self.collections.push( m.trim()
-									.toString() );
-								return m.trim()
-									.toString();
-							} );
-							fulfill( self );
-						}
-					} );
-				}
-			} );
+		self.db = mongojs( 'mongodb://' + self.uri, [] );
+		self.db.getCollectionNames( function ( err, collections ) {
+			if ( err ) reject( err );
+			else {
+				self.collections = collections.map( function ( m ) {
+					return m.trim()
+						.toString();
+				} );
+				fulfill( self );
+			}
+		} );
 	} );
 };
 
