@@ -7,6 +7,8 @@ var reststop = function ( collection, db, sockets ) {
 			db.fetchAllRecords( collection, {} )
 				.then( function ( docs ) {
 					res.json( docs );
+				}, function ( error ) {
+					res.json( error );
 				} );
 		} )
 		.post( function ( req, res ) {
@@ -14,6 +16,8 @@ var reststop = function ( collection, db, sockets ) {
 				.then( function ( docs ) {
 					sockets.emit( 'child_added', docs );
 					res.json( docs );
+				}, function ( error ) {
+					res.json( error );
 				} );
 		} );
 
@@ -24,6 +28,8 @@ var reststop = function ( collection, db, sockets ) {
 				} )
 				.then( function ( doc ) {
 					res.json( doc );
+				}, function ( error ) {
+					res.json( error );
 				} );
 		} )
 		.put( function ( req, res ) {
@@ -31,15 +37,19 @@ var reststop = function ( collection, db, sockets ) {
 				.then( function ( doc ) {
 					sockets.emit( 'child_changed', doc );
 					res.json( doc );
+				}, function ( error ) {
+					res.json( error );
 				} );
 		} )
 		.delete( function ( req, res ) {
 			db.deleteRecord( req.params._id, collection )
 				.then( function () {
 					sockets.emit( 'child_removed', req.params );
-					req.json( {
+					res.json( {
 						message: 'Successfully deleted'
 					} );
+				}, function ( error ) {
+					res.json( error );
 				} );
 		} );
 
