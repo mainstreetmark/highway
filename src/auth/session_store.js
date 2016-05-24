@@ -9,7 +9,8 @@ function SessionStore( session, uri ) {
 
 		self.store = new MongoStore( {
 			uri: uri,
-			collection: 'sessions'
+			collection: 'sessions',
+			expires: 60 * 60 * 24 * 7 * 365 * 5 * 1000
 		} );
 
 		self.store.on( 'connected', function () {
