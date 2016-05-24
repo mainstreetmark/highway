@@ -33,7 +33,10 @@ var DB = function ( uri, hooks, parent ) {
 DB.prototype.connect = function ( uri ) {
 	var self = this;
 	return new Promise( function ( fulfill, reject ) {
-		self.db = mongojs( 'mongodb://' + self.uri, [] );
+		self.db = mongojs( 'mongodb://' + self.uri, [], {
+			connectTimeoutMS: 604800000,
+			socketTimeoutMS: 604800000
+		} );
 		self.db.getCollectionNames( function ( err, collections ) {
 			if ( err ) reject( err );
 			else {
