@@ -83,7 +83,7 @@ Highway.prototype.LoadRoutes = function ( routes ) {
 };
 
 Highway.prototype.CleanUp = function () {
-	this.db.connection.close(); // close the MongoClient connection
+	this.db.close(); // close the MongoClient connection
 };
 
 Highway.prototype.SendEmail = function ( to, message, options ) {
