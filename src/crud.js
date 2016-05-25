@@ -103,12 +103,12 @@ DB.prototype.createRecord = function ( record, collection ) {
 	var self = this;
 	return new Promise( function ( success, failure ) {
 		self.hook( collection, 'beforeSave', record )
-			.then( function ( record ) {
+			.then( function ( data ) {
 				self.db.collection( collection )
-					.insert( record, function ( err, doc ) {
+					.insert( data, function ( err, doc ) {
 						if ( err ) failure( err );
 						else {
-							self.hook( collection, 'afterSave', doc )
+							self.hook( collection, 'afterSave', doc[ 0 ] )
 								.then( function ( record ) {
 									success( record );
 								}, function ( err ) {
