@@ -21,9 +21,11 @@ var SocketServer = function ( io, collection, db ) {
 		socket.on( 'search', function ( options, fn ) {
 			db.fetchAllRecords( collection, options )
 				.then( function ( docs ) {
+					//console.log( fn, docs );
 					fn( docs );
-					socket.emit( 'search_results', docs );
+					//socket.emit( 'search_results', docs );
 				}, function ( error ) {
+					console.log( error );
 					socket.emit( 'error', error );
 				} );
 		} );
