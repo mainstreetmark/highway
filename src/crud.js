@@ -141,7 +141,7 @@ DB.prototype.updateRecord = function ( record, collection ) {
 						$set: tosave
 					}, function ( err, docs ) {
 						if ( err )
-							error( err );
+							failure( err );
 						else {
 							self.hook( collection, 'afterSave', docs )
 								.then( function ( docs ) {
