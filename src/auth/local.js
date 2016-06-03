@@ -33,7 +33,8 @@ var Local = function ( strategy, self ) {
 				store: sstore, // use current database for sessions
 				resave: true,
 				saveUninitialized: true,
-				expires: 60 * 60 * 24 * 7 * 52 * 5 * 1000
+				expires: 60 * 60 * 24 * 7 * 52 * 5 * 1000,
+				cookie: { maxAge: 60 * 60 * 24 * 7 * 52 * 5 * 1000 }
 			} ) );
 
 			passport.use( new LocalStrategy( {
