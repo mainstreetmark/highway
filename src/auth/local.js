@@ -84,6 +84,8 @@ var Local = function ( strategy, self ) {
 					res.send( 'false' );
 					return;
 				} else {
+					req.session.cookie.expires = new Date(Date.now() + expires);
+					req.session.cookie.maxAge = expieres;
 					res.send( JSON.stringify( req.session.passport.user ) );
 					return;
 				}
@@ -95,6 +97,9 @@ var Local = function ( strategy, self ) {
 					failureRedirect: routes.login
 				} ),
 				function ( req, res ) {
+					var expires = 60*60*24*7*365*1000;
+					req.session.cookie.expires = new Date(Date.now() + expires);
+					req.session.cookie.maxAge = expieres;
 					res.redirect( routes.home );
 				}
 			);
