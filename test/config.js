@@ -2,7 +2,7 @@ var config = {
 	uri: 'localhost',
 	database: 'highway',
 	auth: [{
-		defaultUser: '56fea5cc54d49c036c802e53',
+		//	defaultUser: '56fea5cc54d49c036c802e53',
 		strategy: 'local',
 		forceRootAuth: false,
 		routes: {
@@ -15,7 +15,7 @@ var config = {
 
 	},
 	hooks: {
-		revisions: require('../modules/revisions/server.js')
+
 	}
 };
 
