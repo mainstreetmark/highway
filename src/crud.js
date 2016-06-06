@@ -105,7 +105,7 @@ DB.prototype.fetchAllRecords = function (collection, options) {
 DB.prototype.createRecord = function (record, collection) {
 	var self = this;
 	if (_.isEmpty(record) || _.isNull(record) || !record || this.collections.indexOf(collection) <= -1)
-		return Promise.reject('Invalid record');
+		return Promise.reject(new Error('Invalid record'));
 	return new Promise(function (success, failure) {
 		self.hook(collection, 'beforeSave', record)
 			.then(function (data) {
@@ -113,7 +113,7 @@ DB.prototype.createRecord = function (record, collection) {
 					.insert(data, function (err, doc) {
 						if (err) failure(err);
 						else {
-							self.hook(collection, 'afterSave', doc[0])
+							self.hook(collection, 'afterSave', doc)
 								.then(function (record) {
 									success(record);
 								}, function (err) {
