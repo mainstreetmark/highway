@@ -2,6 +2,8 @@ language: node_js
 node_js:
 - stable
 sudo: false
+services:
+  - mongodb
 env:
   - CXX=g++-4.8
 addons:
@@ -13,6 +15,9 @@ addons:
 install:
 - npm install -g mocha node-gyp
 - npm install
+before_script:
+  - sleep 30
+  - mongo highway --eval 'db.createCollection("users");'
 script:
 - npm test
 - npm run coverage
