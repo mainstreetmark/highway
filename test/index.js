@@ -140,6 +140,8 @@ describe('Database', function () {
 
 	describe('read', function () {
 		it('should be able to select from a collection');
+		it('should filter records based on provided search criteria');
+		it('should throw an error when passed invalid search criteria');
 	});
 
 	describe('update', function () {
