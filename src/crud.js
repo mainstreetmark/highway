@@ -104,8 +104,10 @@ DB.prototype.fetchAllRecords = function (collection, options) {
  */
 DB.prototype.createRecord = function (record, collection) {
 	var self = this;
-	if (_.isEmpty(record) || _.isNull(record) || !record || this.collections.indexOf(collection) <= -1)
+	if (_.isEmpty(record) || _.isNull(record) || !record)
 		return Promise.reject(new Error('Invalid record'));
+	if (this.collections.indexOf(collection) <= -1)
+		return Promise.reject(new Error('Invalid collection: ' + collection));
 	return new Promise(function (success, failure) {
 		self.hook(collection, 'beforeSave', record)
 			.then(function (data) {

@@ -3,6 +3,7 @@ var chai = require("chai");
 var chaiAsPromised = require("chai-as-promised");
 var _ = require('underscore');
 var http = require('http');
+var request = require('request');
 chai.should();
 chai.use(chaiAsPromised);
 var config = require('./config.js');
@@ -387,12 +388,35 @@ describe('Sockets', function () {
 });
 
 describe('REST', function () {
-	it('should create a REST endpoint');
-	it('should generate an error if not http server present');
-	it('should generate an error if no socket server present');
+	it('should create a REST endpoint', function () {
+		http.get('http://localhost:3000/highway/users', function (res) {
+			expect(res.statusCode)
+				.to.equal(200);
+		});
+	});
+
+	it('should not attempt to create routes if no http server present', function () {
+		expect(1) // stub
+			.to.equal(1);
+	});
 
 	describe('create', function () {
-		it('should create a record in the database when data is posted to it');
+		it('should create a record in the database when data is posted to it', function (done) {
+			var options = {
+				uri: 'http://localhost:3000/highway/users',
+				method: 'POST',
+				json: {
+					"name": "Dave"
+				}
+			};
+
+			request(options,
+				function (error, response, body) {
+					console.log(body);
+					done();
+				}
+			);
+		});
 		it('should respond with an error if it is unable to create a record');
 		it('should emit the created record to the socket server');
 	});
