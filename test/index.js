@@ -168,7 +168,10 @@ describe('Database', function () {
 	});
 
 	describe('read', function () {
-
+		it('should have the #fetchAllRecords method', function () {
+			expect(d.fetchAllRecords)
+				.to.be.a('function');
+		});
 
 		it('should be able to select from a collection', function (done) {
 			var result = d.fetchAllRecords('users', {});
@@ -185,6 +188,10 @@ describe('Database', function () {
 	});
 
 	describe('update', function () {
+		it('should have the #updateRecord method', function () {
+			expect(d.updateRecord)
+				.to.be.a('function');
+		});
 		it('should be able to update a record in a collection', function (done) {
 			var result = d.updateRecord({
 				"_id": "5755acc5e2b2ed6215533240",
@@ -244,11 +251,47 @@ describe('Database', function () {
 	});
 
 	describe('delete', function () {
-		it('should be able to delete a record from a collection');
-		it('should return a promise when deleting');
-		it('should return an error when deleting an error');
-		it('should call the beforeDelete hook if one exists');
-		it('should call the afterDelete hook if one exists');
+		it('should have the #deleteRecord method', function () {
+			expect(d.deleteRecord)
+				.to.be.a('function');
+		});
+		it('should be able to delete a record from a collection', function () {
+			var result = d.deleteRecord('5755acc5e2b2ed6215533240', 'users');
+			expect(result)
+				.to.be.a('object');
+		});
+		it('should return a promise when deleting', function () {
+			var result = d.deleteRecord('5755acc5e2b2ed6215533240', 'users');
+			expect(result)
+				.to.be.a('object');
+		});
+		//it('should return an error when deleting an error');
+		it('should call the beforeDelete hook if one exists', function (done) {
+			d.hooks['users'] = {
+				beforeDelete: function (self, _id) {
+					return new Promise(function (success, failure) {
+						success(_id);
+					});
+				}
+			};
+			var result = d.deleteRecord(
+				"5755acc5e2b2ed6215533240", 'users');
+			result.should.eventually
+				.notify(done);
+		});
+		it('should call the afterDelete hook if one exists', function (done) {
+			d.hooks['users'] = {
+				afterDelete: function (self, _id) {
+					return new Promise(function (success, failure) {
+						success(_id);
+					});
+				}
+			};
+			var result = d.deleteRecord(
+				"5755acc5e2b2ed6215533240", 'users');
+			result.should.eventually
+				.notify(done);
+		});
 	});
 
 	describe('search', function () {
@@ -260,6 +303,8 @@ describe('Database', function () {
 
 describe('Authentication', function () {
 	it('should allow for a default user');
+	it('should create an /auth http get route');
+	it('should create an /auth http post route');
 });
 
 describe('Sockets', function () {

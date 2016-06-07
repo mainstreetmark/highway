@@ -184,7 +184,7 @@ DB.prototype.deleteRecord = function (_id, collection) {
 						self.hook(collection, 'afterDelete', doc)
 							.then(function (record) {
 								success(record);
-							})
+							});
 					});
 			});
 	});
