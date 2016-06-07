@@ -1,9 +1,12 @@
 var expect = require('expect.js');
 var chai = require("chai");
 var chaiAsPromised = require("chai-as-promised");
+var _ = require('underscore');
 chai.should();
 chai.use(chaiAsPromised);
 var config = require('./config.js');
+var hw;
+
 
 
 
@@ -60,13 +63,15 @@ describe('syntax', function () {
 });
 
 
-var Highway = require('../highway.js');
+
 
 describe('Database', function () {
 	var DB = require('../src/crud.js');
 
 	var d = new DB('localhost/highway');
 	var connection = d.connect();
+
+
 
 	describe('connection', function () {
 		it('should return a promise', function () {
@@ -293,18 +298,55 @@ describe('Database', function () {
 				.notify(done);
 		});
 	});
-
-	describe('search', function () {
-		it('should be able to search the database');
-		it('should generate an error if search criteria doesnt make sense');
-	});
-
 });
 
 describe('Authentication', function () {
-	it('should allow for a default user');
-	it('should create an /auth http get route');
-	it('should create an /auth http post route');
+	before(function (done) {
+		var Highway = require('../highway.js');
+		config.onComplete = function () {
+			done();
+		};
+		hw = new Highway(config);
+	});
+
+
+	it('should create an /auth http get route', function () {
+		var result = _.filter(hw.settings.http._router.stack, function (r) {
+			var route = r.route;
+			return route && route.path && route.path == '/auth' && route.methods.get;
+		});
+		result.should.have.length(1);
+	});
+	it('should create an /auth http post route', function () {
+		var result = _.filter(hw.settings.http._router.stack, function (r) {
+			var route = r.route;
+			return route && route.path && route.path == '/auth' && route.methods.post;
+		});
+		result.should.have.length(1);
+	});
+	/*	it('should create a /login http get route', function () {
+			var result = _.filter(hw.settings.http._router.stack, function (r) {
+				var route = r.route;
+				return route && route.path && route.path == '/login' && route.methods.get;
+			});
+			result.should.have.length(1);
+		});
+		it('should allow override of the /login http get route'); */
+	it('should create a /logout http get route', function () {
+		var result = _.filter(hw.settings.http._router.stack, function (r) {
+			var route = r.route;
+			return route && route.path && route.path == '/logout' && route.methods.get;
+		});
+		result.should.have.length(1);
+	});
+
+	describe('#login', function () {
+		it('should render a login form');
+		it('should submit a POST request to /auth');
+		it('should redirect to /login on failure');
+		it('should include an error message describing why it failed');
+		it('should redirect to /home on success');
+	});
 });
 
 describe('Sockets', function () {

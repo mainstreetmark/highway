@@ -29,8 +29,9 @@ var Local = function (strategy, self) {
 		.then(function (sstore) {
 
 			var expires = 60 * 60 * 24 * 7 * 365 * 1000;
+			var http = self.settings.http;
 
-			self.settings.http.use(session({
+			http.use(session({
 				secret: secret,
 				store: sstore, // use current database for sessions
 				resave: true,
@@ -80,10 +81,10 @@ var Local = function (strategy, self) {
 			});
 
 
-			self.settings.http.use(passport.initialize());
-			self.settings.http.use(passport.session());
+			http.use(passport.initialize());
+			http.use(passport.session());
 
-			self.settings.http.get(routes.auth, function (req, res) {
+			http.get(routes.auth, function (req, res) {
 				var loggedIn = req.isAuthenticated();
 				if (!loggedIn) {
 					res.send('false');
@@ -97,7 +98,7 @@ var Local = function (strategy, self) {
 			});
 
 
-			self.settings.http.post(routes.auth,
+			http.post(routes.auth,
 				passport.authenticate('local', {
 					failureRedirect: routes.login
 				}),
@@ -108,13 +109,12 @@ var Local = function (strategy, self) {
 				}
 			);
 
-			self.settings.http.get(routes.logout, function (req, res) {
+			http.get(routes.logout, function (req, res) {
 				req.logout();
 				res.redirect(routes.home);
-
 			});
 
-			self.settings.http.post('/highway/user', function (req, res) {
+			http.post('/highway/user', function (req, res) {
 				var bcrypt = require('bcrypt');
 				var salt = bcrypt.genSaltSync(10);
 				if (!req.body.email) {
@@ -137,7 +137,7 @@ var Local = function (strategy, self) {
 					});
 			});
 
-			self.settings.http.get('/password-reset', function (req, res) {
+			http.get('/password-reset', function (req, res) {
 				var fs = require('fs');
 				if (req.query.token) {
 					self.db.collection('users')
@@ -177,7 +177,7 @@ var Local = function (strategy, self) {
 
 
 			if (strategy.options.ForceRootAuth) {
-				self.settings.http.get(routes.home, strategy.homeCallback);
+				http.get(routes.home, strategy.homeCallback);
 			}
 
 			if (typeof self.settings.onComplete == 'function') {
