@@ -170,13 +170,22 @@ DB.prototype.updateRecord = function (record, collection) {
  * @return {[type]}     [description]
  */
 DB.prototype.deleteRecord = function (_id, collection) {
+	var self = this;
+	if (this.collections.indexOf(collection) <= -1)
+		return Promise.reject(new Error('Invalid collection'));
 	return new Promise(function (success, failure) {
-		self.collection(collection)
-			.remove({
-				"_id": ObjectId(_id)
-			}, function (err, doc) {
-				if (err) failure(err);
-				success(doc);
+		self.hook(collection, 'beforeDelete', _id)
+			.then(function (record) {
+				self.collection(collection)
+					.remove({
+						"_id": ObjectId(_id)
+					}, function (err, doc) {
+						if (err) failure(err);
+						self.hook(collection, 'afterDelete', doc)
+							.then(function (record) {
+								success(record);
+							})
+					});
 			});
 	});
 
