@@ -2,6 +2,7 @@ var expect = require('expect.js');
 var chai = require("chai");
 var chaiAsPromised = require("chai-as-promised");
 var _ = require('underscore');
+var http = require('http');
 chai.should();
 chai.use(chaiAsPromised);
 var config = require('./config.js');
@@ -350,8 +351,16 @@ describe('Authentication', function () {
 });
 
 describe('Sockets', function () {
-	it('should generate a socket server');
-	it('should make socket.io client available');
+	it('should generate a socket server', function () {
+		expect(hw.settings.io)
+			.to.be.a('object');
+	});
+	it('should make socket.io client available', function () {
+		http.get('http://localhost:3000/socket.io/socket.io.js', function (res) {
+			expect(res.statusCode)
+				.to.equal(200);
+		});
+	});
 
 	describe('create', function () {
 		it('should create a record in the database when data is posted to it');
