@@ -148,7 +148,7 @@ DB.prototype.updateRecord = function (record, collection) {
 						if (err)
 							failure(err);
 						else {
-							self.hook(collection, 'afterSave', docs)
+							self.hook(collection, 'afterSave', record)
 								.then(function (docs) {
 									success(docs);
 								}, function (err) {

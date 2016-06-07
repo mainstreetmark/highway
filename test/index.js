@@ -90,7 +90,6 @@ describe('Database', function () {
 			var h = d.hook("users2222", 'beforeSave', {
 				"name": "Dave"
 			});
-			console.log(h);
 			h.should.eventually.have.property("name")
 				.notify(done);
 		});
@@ -187,7 +186,12 @@ describe('Database', function () {
 
 	describe('update', function () {
 		it('should be able to update a record in a collection', function (done) {
-
+			var result = d.updateRecord({
+				"_id": "5755acc5e2b2ed6215533240",
+				"name": "fart"
+			}, 'users');
+			result.should.eventually.have.property('name')
+				.notify(done);
 		});
 		it('should return a promise when updating');
 		it('should return an error when updating an error');
