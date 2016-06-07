@@ -188,15 +188,59 @@ describe('Database', function () {
 		it('should be able to update a record in a collection', function (done) {
 			var result = d.updateRecord({
 				"_id": "5755acc5e2b2ed6215533240",
-				"name": "fart"
+				"name": "Not Dave"
 			}, 'users');
 			result.should.eventually.have.property('name')
 				.notify(done);
 		});
-		it('should return a promise when updating');
-		it('should return an error when updating an error');
-		it('should call the beforeSave hook if one exists');
-		it('should call the afterSave hook if one exists');
+		it('should return a promise when updating', function () {
+			var result = d.updateRecord({
+				"_id": "5755acc5e2b2ed6215533240",
+				"name": "Not Dave"
+			}, 'users');
+			expect(result)
+				.to.be.a('object');
+		});
+		it('should return an error when updating an error', function (done) {
+			var result = d.updateRecord({
+				"_id": "5755acc5e2b2ed6215533240",
+				"name": "Not Dave"
+			}, 'users2');
+			result.should.eventually.be.rejected
+				.notify(done);
+		});
+		it('should call the beforeSave hook if one exists', function (done) {
+			d.hooks['users'] = {
+				beforeSave: function (self, data) {
+					return new Promise(function (success, failure) {
+						data.executedBeforeSave = true;
+						success(data);
+					});
+				}
+			};
+			var result = d.updateRecord({
+				"_id": "5755acc5e2b2ed6215533240",
+				"name": "Dave"
+			}, 'users');
+			result.should.eventually.have.property('executedBeforeSave')
+				.notify(done);
+		});
+		it('should call the afterSave hook if one exists', function (done) {
+			d.hooks['users'] = {
+				afterSave: function (self, data) {
+					return new Promise(function (success, failure) {
+						data.executedAfterSave = true;
+						success(data);
+					});
+				}
+			};
+			var result = d.updateRecord({
+				"_id": "5755acc5e2b2ed6215533240",
+				"name": "Dave"
+			}, 'users');
+			result.should.eventually.have.property('executedAfterSave')
+				.notify(done);
+		});
 	});
 
 	describe('delete', function () {

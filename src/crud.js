@@ -134,6 +134,8 @@ DB.prototype.createRecord = function (record, collection) {
  */
 DB.prototype.updateRecord = function (record, collection) {
 	var self = this;
+	if (this.collections.indexOf(collection) <= -1)
+		return Promise.reject(new Error('Invalid collection ' + collection));
 	return new Promise(function (success, failure) {
 		self.hook(collection, 'beforeSave', record)
 			.then(function (record) {
