@@ -65,38 +65,39 @@ var Highway = require('../highway.js');
 describe('Database', function () {
 	var DB = require('../src/crud.js');
 
+	var d = new DB('localhost/highway');
+	var connection = d.connect();
+
 	describe('connection', function () {
 		it('should return a promise', function () {
-			var d = new DB('localhost/highway');
-			var result = d.connect();
-			expect(result)
+			expect(connection)
 				.to.be.a('object');
 		});
-		it('should fail with an error', function () {
-			var d = new DB('invalidhost/highway');
-			d.connect()
-				.then(function () {}, function (err) {
-					expect(err)
-						.to.not.equal({});
-				});
-		});
+		/*	it('should fail with an error', function () {
+				var d = new DB('invalidhost/highway');
+				d.connect()
+					.then(function () {}, function (err) {
+						expect(err)
+							.to.not.equal({});
+					});
+			});*/
 	});
 
-	describe('hooks', function () {
-		it('should return a resolving promise when no hook exists', function () {
-			var d = new DB('localhost/highway');
-			d.connect()
-				.then(function () {
-					d.db.hook();
-				}, function (err) {
 
-				});
+
+	describe('hooks', function () {
+		it('should return a resolving promise when no hook exists', function (done) {
+			var h = d.hook("users2222", 'beforeSave', {
+				"name": "Dave"
+			});
+			console.log(h);
+			h.should.eventually.have.property("name")
+				.notify(done);
 		});
 	});
 
 	describe('create', function () {
-		var d = new DB('localhost/highway');
-		d.connect();
+
 		it('should have the #createRecord method', function () {
 			expect(d.createRecord)
 				.to.be.a('function');
@@ -132,20 +133,62 @@ describe('Database', function () {
 			result.should.eventually.be.rejected
 				.notify(done);
 		});
-		it('should call the beforeSave hook if one exists');
-		it('should call the afterSave hook if one exists');
+		it('should call the beforeSave hook if one exists', function (done) {
+			d.hooks['users'] = {
+				beforeSave: function (self, data) {
+					return new Promise(function (success, failure) {
+						data.executedBeforeSave = true;
+						success(data);
+					});
+				}
+			};
+			var result = d.createRecord({
+				"name": "Dave"
+			}, 'users');
+			result.should.eventually.have.property('executedBeforeSave')
+				.notify(done);
+
+		});
+		it('should call the afterSave hook if one exists', function (done) {
+			d.hooks['users'] = {
+				afterSave: function (self, data) {
+					return new Promise(function (success, failure) {
+						data.executedAfterSave = true;
+						success(data);
+					});
+				}
+			};
+			var result = d.createRecord({
+				"name": "Dave"
+			}, 'users');
+			result.should.eventually.have.property('executedAfterSave')
+				.notify(done);
+		});
 
 
 	});
 
 	describe('read', function () {
-		it('should be able to select from a collection');
-		it('should filter records based on provided search criteria');
-		it('should throw an error when passed invalid search criteria');
+
+
+		it('should be able to select from a collection', function (done) {
+			var result = d.fetchAllRecords('users', {});
+			result.should.eventually.have.length.within(1, 1000000)
+				.notify(done);
+		});
+		it('should filter records based on provided search criteria', function (done) {
+			var result = d.fetchAllRecords('users', {
+				limit: 1
+			});
+			result.should.eventually.have.length(1)
+				.notify(done);
+		});
 	});
 
 	describe('update', function () {
-		it('should be able to update a record in a collection');
+		it('should be able to update a record in a collection', function (done) {
+
+		});
 		it('should return a promise when updating');
 		it('should return an error when updating an error');
 		it('should call the beforeSave hook if one exists');
