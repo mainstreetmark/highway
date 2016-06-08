@@ -17,6 +17,7 @@ var reststop = function (collection, db, sockets) {
 					sockets.emit('child_added', docs);
 					res.send(docs);
 				}, function (error) {
+					//console.log(error);
 					res.json(error);
 				});
 		});

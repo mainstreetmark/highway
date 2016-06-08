@@ -28,29 +28,6 @@ var Highway = function (settings) {
 	self.socketservers = self.sockets = {};
 	self.mailer = new Email(self.settings.email);
 
-
-	PrepareHTTP();
-	var db = new DB(settings.uri + '/' + settings.database, settings.hooks, self);
-	db.connect()
-		.then(function (d) {
-			self.db = d;
-			var auth = new Auth(self);
-			collections = self.db.collections;
-			while ((collection = collections.pop()) !== undefined) {
-				if (collection.trim() !== '' && collection != 'system.indexes') {
-					self.sockets[collection] = self.io.of('/' + settings.database + '/' + collection);
-					self.socketservers[collection] = new SocketServer(self.io, collection, self.db); //SetUpSockets( collection );
-					if (self.settings.http)
-						self.settings.http.use('/' +
-							settings.database + '/' + collection, new reststop(collection, self.db, self.io.of('/' + settings.database + '/' + collection)));
-				}
-			}
-		}, function (err) {
-			console.error('Unable to connect to database: ', err);
-		});
-
-
-
 	function PrepareHTTP() {
 		if (!self.settings.http)
 			return;
@@ -67,7 +44,32 @@ var Highway = function (settings) {
 	}
 
 
-	return self;
+	return new Promise(function (success, failure) {
+		PrepareHTTP();
+		var db = new DB(settings.uri + '/' + settings.database, settings.hooks, self);
+		db.connect()
+			.then(function (d) {
+				self.db = d;
+				var auth = new Auth(self)
+					.then(function (s) {
+						collections = _.clone(self.db.collections);
+						while ((collection = collections.pop()) !== undefined) {
+							if (collection.trim() !== '' && collection != 'system.indexes') {
+								self.sockets[collection] = self.io.of('/' + settings.database + '/' + collection);
+								self.socketservers[collection] = new SocketServer(self.io, collection, self.db); //SetUpSockets( collection );
+								if (self.settings.http) {
+									self.settings.http.use('/' +
+										settings.database + '/' + collection, new reststop(collection, self.db, self.io.of('/' + settings.database + '/' + collection)));
+								}
+							}
+						}
+						success(self);
+					});
+			}, function (err) {
+				failure(err);
+				console.error('Unable to connect to database: ', err);
+			});
+	});
 };
 
 Highway.prototype.LoadRoutes = function (routes) {

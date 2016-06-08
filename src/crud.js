@@ -39,7 +39,8 @@ DB.prototype.connect = function (uri) {
 		});
 		self.db.on('error', function (err) {
 			reject(err);
-		})
+		});
+
 		self.db.getCollectionNames(function (err, collections) {
 			if (err) reject(err);
 			else {
@@ -50,6 +51,7 @@ DB.prototype.connect = function (uri) {
 				fulfill(self);
 			}
 		});
+
 	});
 };
 
@@ -80,6 +82,9 @@ DB.prototype.collection = function (collection) {
 DB.prototype.fetchAllRecords = function (collection, options) {
 	var self = this;
 	options = options || {};
+	if (self.collections.indexOf(collection) <= -1) {
+		return Promise.reject(new Error('Invalid collection: ' + collection));
+	}
 	var search = options.search || {};
 	var limit = options.limit || Infinity;
 	var skip = options.skip || 0;
