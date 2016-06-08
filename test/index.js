@@ -4,6 +4,7 @@ var chaiAsPromised = require("chai-as-promised");
 var _ = require('underscore');
 var http = require('http');
 var request = require('request');
+var sinon = require('sinon');
 chai.should();
 chai.use(chaiAsPromised);
 var config = require('./config.js');
@@ -303,12 +304,15 @@ describe('Database', function () {
 });
 
 describe('Authentication', function () {
+	var hw;
 	before(function (done) {
 		var Highway = require('../highway.js');
-		config.onComplete = function () {
-			done();
-		};
-		hw = new Highway(config);
+
+		new Highway(config)
+			.then(function (s) {
+				hw = s;
+				done();
+			});
 	});
 
 
@@ -352,10 +356,17 @@ describe('Authentication', function () {
 });
 
 describe('Sockets', function () {
-	it('should generate a socket server', function () {
-		expect(hw.settings.io)
-			.to.be.a('object');
+	var hw;
+	before(function (done) {
+		var Highway = require('../highway.js');
+
+		new Highway(config)
+			.then(function (s) {
+				hw = s;
+				done();
+			});
 	});
+
 	it('should make socket.io client available', function () {
 		http.get('http://localhost:3000/socket.io/socket.io.js', function (res) {
 			expect(res.statusCode)
@@ -388,10 +399,25 @@ describe('Sockets', function () {
 });
 
 describe('REST', function () {
-	it('should create a REST endpoint', function () {
+	var hw;
+	before(function (done) {
+		var Highway = require('../highway.js');
+		new Highway(config)
+			.then(function (s) {
+				hw = s;
+				done();
+			}, function (err) {
+				console.log('error ', err);
+			});
+	});
+	it('should create a REST endpoint', function (done) {
+
+
 		http.get('http://localhost:3000/highway/users', function (res) {
 			expect(res.statusCode)
 				.to.equal(200);
+			done();
+
 		});
 	});
 
@@ -412,13 +438,51 @@ describe('REST', function () {
 
 			request(options,
 				function (error, response, body) {
+					expect(body.name)
+						.to.contain('Dave');
+					done();
+				}
+			);
+
+		});
+		it('should respond with an error if it is unable to create a record', function (done) {
+			var options = {
+				uri: 'http://localhost:3000/highway/users2',
+				method: 'POST',
+				json: {
+					"name": "Dave"
+				}
+			};
+
+			request(options,
+				function (error, response, body) {
 					console.log(body);
+					expect(body)
+						.to.contain('Cannot POST /highway/users2');
 					done();
 				}
 			);
 		});
-		it('should respond with an error if it is unable to create a record');
-		it('should emit the created record to the socket server');
+		it('should emit the created record to the socket server', function () {
+			sinon.spy(hw.io, 'emit');
+			var options = {
+				uri: 'http://localhost:3000/highway/users',
+				method: 'POST',
+				json: {
+					"name": "Dave"
+				}
+			};
+
+			request(options,
+				function (error, response, body) {
+					expect(hw.io.emit.calledOnce)
+						.to.be.ok;
+
+					hw.io.emit.restore();
+					done();
+				}
+			);
+		});
 	});
 
 	describe('read', function () {
