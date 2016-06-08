@@ -63,6 +63,11 @@ var Highway = function (settings) {
 								}
 							}
 						}
+
+						if (typeof self.settings.onComplete == 'function') {
+							self.settings.onComplete(self, _, ObjectId);
+						}
+
 						success(self);
 					});
 			}, function (err) {
