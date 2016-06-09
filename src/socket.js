@@ -40,7 +40,14 @@ var SocketServer = function (io, collection, db) {
 		socket.on('update', function (record) {
 			db.updateRecord(record, collection)
 				.then(function (doc) {
-					socket.broadcast.emit('child_changed', record);
+					db.fetchAllRecords(collection, {
+							search: {
+								"_id": record._id
+							}
+						})
+						.then(function (doc) {
+							socket.broadcast.emit('child_changed', doc[0]);
+						});
 				}, function (error) {
 					console.log('error', error);
 				});
