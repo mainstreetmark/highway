@@ -25,7 +25,10 @@ var reststop = function (collection, db, sockets) {
 	router.route('/:_id')
 		.get(function (req, res) {
 			db.fetchAllRecords(collection, {
-					"_id": req.params._id
+					search: {
+						"_id": req.params._id
+					},
+					limit: 1
 				})
 				.then(function (doc) {
 					res.json(doc);

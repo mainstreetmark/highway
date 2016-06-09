@@ -495,6 +495,9 @@ describe('REST', function () {
 			});
 		});
 		it('should respond to search criteria provided as URL paramters');
+		it('should read a single record when provided an _id in the url', function () {
+
+		});
 	});
 
 	describe('update', function () {
