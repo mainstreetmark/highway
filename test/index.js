@@ -375,7 +375,9 @@ describe('Sockets', function () {
 	});
 
 	describe('create', function () {
-		it('should create a record in the database when data is posted to it');
+		it('should create a record in the database when data is posted to it', function () {
+
+		});
 		it('should respond with an error if it is unable to create a record');
 		it('should emit the created record to the socket server');
 	});
@@ -486,7 +488,12 @@ describe('REST', function () {
 	});
 
 	describe('read', function () {
-		it('should read records from the database and return them in JSON format');
+		it('should read records from the database and return them in JSON format', function () {
+			http.get('http://localhost:3000/highway/users', function (res) {
+				expect(res.body)
+					.to.contain('Dave');
+			});
+		});
 		it('should respond to search criteria provided as URL paramters');
 	});
 
