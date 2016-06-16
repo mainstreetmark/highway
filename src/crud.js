@@ -14,7 +14,9 @@ var DB = function (uri, hooks, parent) {
 	this.uri = uri;
 	this.hooks = hooks || {};
 	this.highway = parent;
-	this.log = function (msg) {};
+	this.log = parent ? parent.logger : function (msg) {
+		console.log(msg);
+	};
 	this.collections = [];
 
 	function sanitizeURI(uri) {
@@ -50,7 +52,7 @@ DB.prototype.connect = function (uri) {
 					return m.trim()
 						.toString();
 				});
-				self.log('Connected to database');
+				self.log('info', 'Connected to database');
 				fulfill(self);
 			}
 		});
@@ -88,6 +90,8 @@ DB.prototype.fetchAllRecords = function (collection, options) {
 	if (self.collections.indexOf(collection) <= -1) {
 		return Promise.reject(new Error('Invalid collection: ' + collection));
 	}
+
+	this.log('info', 'Fetch all');
 	var search = options.search || {};
 	var limit = options.limit || Infinity;
 	var skip = options.skip || 0;
@@ -125,7 +129,7 @@ DB.prototype.createRecord = function (record, collection) {
 					.insert(data, function (err, doc) {
 						if (err) failure(err);
 						else {
-							self.log(collection + "\tCREATE\t" + JSON.stringify(record));
+							self.log('info', collection + "\tCREATE\t" + JSON.stringify(record));
 							self.hook(collection, 'afterSave', doc)
 								.then(function (record) {
 									success(record);
@@ -165,7 +169,7 @@ DB.prototype.updateRecord = function (record, collection) {
 							if (err)
 								failure(err);
 							else {
-								self.log(collection + "\tUPDATE\t" + JSON.stringify(record));
+								self.log('info', collection + "\tUPDATE\t" + JSON.stringify(record));
 								self.hook(collection, 'afterSave', record)
 									.then(function (docs) {
 										success(docs);
@@ -212,7 +216,7 @@ DB.prototype.deleteRecord = function (_id, collection) {
 						"_id": ObjectId(_id)
 					}, function (err, doc) {
 						if (err) failure(err);
-						self.log(collection + "\tDELETE\t" + _id);
+						self.log('info', collection + "\tDELETE\t" + _id);
 						self.hook(collection, 'afterDelete', doc)
 							.then(function (record) {
 								success(record);

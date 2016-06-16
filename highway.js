@@ -24,20 +24,18 @@ var Highway = function (settings) {
 		throw new Error('No settings provided');
 	}
 
+	// logger crap
+	winston.add(winston.transports.File, {
+		filename: '/var/log/highway.log'
+	});
+	winston.remove(winston.transports.Console);
+
 	var self = this;
 	self.settings = _.defaults(settings || {}, defaults);
 	self.io = self.settings.io;
 	self.socketservers = self.sockets = {};
 	self.mailer = new Email(self.settings.email);
-	self.logger = self.settings.log ? new(winston.Logger)({
-		transports: [
-			new(winston.transports.File)({
-				filename: '/var/log/highway.log'
-			})
-		]
-	}) : {
-		log: function () {}
-	};
+	self.logger = self.settings.log ? winston.log : function () {};
 
 	function PrepareHTTP() {
 		if (!self.settings.http)
