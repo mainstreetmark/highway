@@ -368,7 +368,7 @@ describe('Sockets', function () {
 	});
 
 	it('should make socket.io client available', function () {
-		http.get('http://localhost:3000/socket.io/socket.io.js', function (res) {
+		http.get('http://localhost:3768/socket.io/socket.io.js', function (res) {
 			expect(res.statusCode)
 				.to.equal(200);
 		});
@@ -415,7 +415,7 @@ describe('REST', function () {
 	it('should create a REST endpoint', function (done) {
 
 
-		http.get('http://localhost:3000/highway/users', function (res) {
+		http.get('http://localhost:3768/highway/users', function (res) {
 			expect(res.statusCode)
 				.to.equal(200);
 			done();
@@ -431,7 +431,7 @@ describe('REST', function () {
 	describe('create', function () {
 		it('should create a record in the database when data is posted to it', function (done) {
 			var options = {
-				uri: 'http://localhost:3000/highway/users',
+				uri: 'http://localhost:3768/highway/users',
 				method: 'POST',
 				json: {
 					"name": "Dave"
@@ -449,7 +449,7 @@ describe('REST', function () {
 		});
 		it('should respond with an error if it is unable to create a record', function (done) {
 			var options = {
-				uri: 'http://localhost:3000/highway/users2',
+				uri: 'http://localhost:3768/highway/users2',
 				method: 'POST',
 				json: {
 					"name": "Dave"
@@ -468,7 +468,7 @@ describe('REST', function () {
 		it('should emit the created record to the socket server', function () {
 			sinon.spy(hw.io, 'emit');
 			var options = {
-				uri: 'http://localhost:3000/highway/users',
+				uri: 'http://localhost:3768/highway/users',
 				method: 'POST',
 				json: {
 					"name": "Dave"
@@ -490,7 +490,7 @@ describe('REST', function () {
 	describe('read', function () {
 		it('should read records from the database and return them in JSON format', function () {
 			this.timeout(3000000);
-			http.get('http://localhost:3000/highway/users/5755acc5e2b2ed6215533240', function (res) {
+			http.get('http://localhost:3768/highway/users/5755acc5e2b2ed6215533240', function (res) {
 				console.log(res.body);
 				/*expect(res.body)
 					.to.contain('Dave');*/

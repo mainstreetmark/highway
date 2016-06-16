@@ -150,23 +150,40 @@ DB.prototype.updateRecord = function (record, collection) {
 			.then(function (record) {
 				var tosave = _.clone(record);
 				delete tosave._id;
-				self.collection(collection)
-					.update({
-						"_id": ObjectId(record._id)
-					}, {
-						$set: tosave
-					}, function (err, docs) {
-						if (err)
-							failure(err);
+
+				if (record._id) {
+					self.collection(collection)
+						.update({
+							"_id": ObjectId(record._id)
+						}, {
+							$set: tosave
+						}, function (err, docs) {
+							if (err)
+								failure(err);
+							else {
+								self.hook(collection, 'afterSave', record)
+									.then(function (docs) {
+										success(docs);
+									}, function (err) {
+										failure(err);
+									});
+							}
+						});
+				} else {
+					self.collection(collection).insert(record, function (err, doc) {
+						if (err) failure(err);
 						else {
-							self.hook(collection, 'afterSave', record)
-								.then(function (docs) {
-									success(docs);
+							self.hook(collection, 'afterSave', doc)
+								.then(function (record) {
+									success(record);
 								}, function (err) {
 									failure(err);
 								});
 						}
 					});
+				}
+
+
 			});
 	});
 };

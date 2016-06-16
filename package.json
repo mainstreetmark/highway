@@ -58,6 +58,7 @@
     "expect.js": "^0.3.1",
     "express": "^4.13.4",
     "mocha-lcov-reporter": "^1.2.0",
+    "monitor.io": "^0.1.0",
     "path": "^0.12.7",
     "sinon": "^1.17.4",
     "socket.io": "^1.4.6"
