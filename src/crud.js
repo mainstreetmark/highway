@@ -14,7 +14,7 @@ var DB = function (uri, hooks, parent) {
 	this.uri = uri;
 	this.hooks = hooks || {};
 	this.highway = parent;
-	this.log = parent ? parent.logger.log : function () {};
+	this.log = function (msg) {};
 	this.collections = [];
 
 	function sanitizeURI(uri) {
