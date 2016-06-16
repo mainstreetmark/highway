@@ -8,6 +8,7 @@ var Highway = function (settings) {
 	var reststop = require('./src/rest-stop.js');
 	var SocketServer = require('./src/socket.js');
 	var Auth = require('./src/auth.js');
+	var winston = require('winston');
 
 	var defaults = {
 		io: false,
@@ -15,7 +16,8 @@ var Highway = function (settings) {
 		uri: false,
 		database: false,
 		auth: [],
-		email: {}
+		email: {},
+		log: false
 	};
 
 	if (!settings) {
@@ -27,6 +29,15 @@ var Highway = function (settings) {
 	self.io = self.settings.io;
 	self.socketservers = self.sockets = {};
 	self.mailer = new Email(self.settings.email);
+	self.logger = self.settings.log ? new(winston.Logger)({
+		transports: [
+			new(winston.transports.File)({
+				filename: '/var/log/highway.log'
+			})
+		]
+	}) : {
+		log: function () {}
+	};
 
 	function PrepareHTTP() {
 		if (!self.settings.http)

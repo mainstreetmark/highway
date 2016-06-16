@@ -14,6 +14,7 @@ var DB = function (uri, hooks, parent) {
 	this.uri = uri;
 	this.hooks = hooks || {};
 	this.highway = parent;
+	this.log = parent ? parent.logger.log : function () {};
 	this.collections = [];
 
 	function sanitizeURI(uri) {
@@ -32,6 +33,7 @@ var DB = function (uri, hooks, parent) {
  */
 DB.prototype.connect = function (uri) {
 	var self = this;
+
 	return new Promise(function (fulfill, reject) {
 		self.db = mongojs('mongodb://' + self.uri, [], {
 			connectTimeoutMS: 604800000,
@@ -48,6 +50,7 @@ DB.prototype.connect = function (uri) {
 					return m.trim()
 						.toString();
 				});
+				self.log('Connected to database');
 				fulfill(self);
 			}
 		});
@@ -122,6 +125,7 @@ DB.prototype.createRecord = function (record, collection) {
 					.insert(data, function (err, doc) {
 						if (err) failure(err);
 						else {
+							self.log(collection + "\tCREATE\t" + JSON.stringify(record));
 							self.hook(collection, 'afterSave', doc)
 								.then(function (record) {
 									success(record);
@@ -161,6 +165,7 @@ DB.prototype.updateRecord = function (record, collection) {
 							if (err)
 								failure(err);
 							else {
+								self.log(collection + "\tUPDATE\t" + JSON.stringify(record));
 								self.hook(collection, 'afterSave', record)
 									.then(function (docs) {
 										success(docs);
@@ -207,6 +212,7 @@ DB.prototype.deleteRecord = function (_id, collection) {
 						"_id": ObjectId(_id)
 					}, function (err, doc) {
 						if (err) failure(err);
+						self.log(collection + "\tDELETE\t" + _id);
 						self.hook(collection, 'afterDelete', doc)
 							.then(function (record) {
 								success(record);
