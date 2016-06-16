@@ -71,7 +71,7 @@ var SocketServer = function (io, collection, db) {
 		socket.on('destroy', function (record) {
 			db.deleteRecord(record._id, collection)
 				.then(function (doc) {
-					socket.broadcast.emit('child_changed', doc);
+					socket.broadcast.emit('child_removed', doc);
 				});
 		});
 	});
