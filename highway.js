@@ -26,7 +26,8 @@ var Highway = function (settings) {
 
 	// logger crap
 	winston.add(winston.transports.File, {
-		filename: '/var/log/highway.log'
+		filename: '/var/log/highway.log',
+		json: false
 	});
 	winston.remove(winston.transports.Console);
 
