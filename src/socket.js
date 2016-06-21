@@ -69,7 +69,10 @@ var SocketServer = function (io, collection, db) {
 		 * @return {[type]} [description]
 		 */
 		socket.on('destroy', function (record) {
-			db.deleteRecord(record._id, collection)
+			var remove = record;
+			if (typeof record == 'object')
+				remove = record._id;
+			db.deleteRecord(remove, collection)
 				.then(function (doc) {
 					socket.broadcast.emit('child_removed', doc);
 				});

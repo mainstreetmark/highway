@@ -25,12 +25,13 @@ var Highway = function (settings) {
 	}
 
 	// logger crap
-	winston.add(winston.transports.File, {
-		filename: '/var/log/highway.log',
-		json: false
-	});
-	winston.remove(winston.transports.Console);
-
+	if (settings && settings.log) {
+		winston.add(winston.transports.File, {
+			filename: '/var/log/highway.log',
+			json: false
+		});
+		winston.remove(winston.transports.Console);
+	}
 	var self = this;
 	self.settings = _.defaults(settings || {}, defaults);
 	self.io = self.settings.io;
