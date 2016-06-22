@@ -90,8 +90,9 @@ DB.prototype.fetchAllRecords = function (collection, options) {
 	if (self.collections.indexOf(collection) <= -1) {
 		return Promise.reject(new Error('Invalid collection: ' + collection));
 	}
-
-	this.log('info', 'Fetch all');
+	if (!self.isValidSearchObject(options)) {
+		return Promise.reject('Invalid search criteria');
+	}
 	var search = options.search || {};
 	var limit = options.limit || Infinity;
 	var skip = options.skip || 0;
@@ -253,6 +254,17 @@ DB.prototype.hook = function (collection, hook, data) {
 	});
 
 
+};
+
+DB.prototype.isValidSearchObject = function (object) {
+	var ret = true;
+
+	for (var i in object) {
+		if (i != 'search' && i != 'limit' && i != 'skip')
+			ret = false;
+	}
+
+	return ret;
 };
 
 module.exports = DB;
