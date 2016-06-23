@@ -183,6 +183,7 @@ DB.prototype.updateRecord = function (record, collection) {
 					self.collection(collection).insert(record, function (err, doc) {
 						if (err) failure(err);
 						else {
+							self.log('info', collection + "\tCREATE\t"+ JSON.stringify(doc));
 							self.hook(collection, 'afterSave', doc)
 								.then(function (record) {
 									success(record);
