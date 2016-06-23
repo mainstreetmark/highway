@@ -185,8 +185,8 @@ DB.prototype.updateRecord = function (record, collection) {
 						else {
 							self.log('info', collection + "\tCREATE\t"+ JSON.stringify(doc));
 							self.hook(collection, 'afterSave', doc)
-								.then(function (record) {
-									success(record);
+								.then(function (record2) {
+									success(record2);
 								}, function (err) {
 									failure(err);
 								});
