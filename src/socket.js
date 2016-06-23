@@ -34,9 +34,11 @@ var SocketServer = function (io, collection, db) {
 		 * @param  {[type]} function (             record [description]
 		 * @return {[type]} [description]
 		 */
-		socket.on('update', function (record) {
+		socket.on('update', function (record, fn) {
 			db.updateRecord(record, collection)
-				.then(function () {
+				.then(function (doc) {
+					if(fn)
+						fn(doc);
 					socket.broadcast.emit('child_changed', record);
 				}, function (error) {
 					console.log('error', error);
