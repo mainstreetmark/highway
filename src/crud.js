@@ -158,14 +158,20 @@ DB.prototype.updateRecord = function (record, collection) {
 		self.hook(collection, 'beforeSave', record)
 			.then(function (record) {
 				var tosave = _.clone(record);
-				delete tosave._id;
+				var unset = { highwayTempProp : ''};
+				for(var i in record){
+					if(record[i] === undefined)
+						unset[i] = '';
+				}
+				delete tosave._id, unset._id;
 
 				if (record._id) {
 					self.collection(collection)
 						.update({
 							"_id": ObjectId(record._id)
 						}, {
-							$set: tosave
+							$set: tosave,
+							$unset: unset
 						}, function (err, docs) {
 							if (err)
 								failure(err);
