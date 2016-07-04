@@ -40,6 +40,11 @@ var SocketServer = function (io, collection, db) {
 					if(fn)
 						fn(doc);
 					socket.broadcast.emit('child_changed', record);
+					for(var i in record){
+						if(record[i] === undefined){
+							socket.broadcast.emit('child_unset', _.extend({ _id: record._id}, record[i]));
+						}
+					}
 				}, function (error) {
 					console.log('error', error);
 				});
