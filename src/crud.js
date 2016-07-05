@@ -205,6 +205,56 @@ DB.prototype.updateRecord = function (record, collection) {
 	});
 };
 
+
+/**
+ * [replaceRecord description]
+ * @method replaceRecord
+ * @param  {[type]}     record     [description]
+ * @param  {[type]}     collection [description]
+ * @return {[type]}     [description]
+ */
+DB.prototype.replaceRecord = function (record, collection) {
+	var self = this;
+	if (this.collections.indexOf(collection) <= -1)
+		return Promise.reject(new Error('Invalid collection ' + collection));
+	if (!record._id)
+		return Promise.reject(new Error('No _id provided'));
+	return new Promise(function (success, failure) {
+		self.hook(collection, 'beforeSave', record)
+			.then(function (record) {
+
+				var bulk = self.collection(collection).initializeOrderedBulkOp();
+				bulk.find({ _id : ObjectId(record._id)}).replaceOne(record);
+				
+				
+ 
+				bulk.execute(function (err, res) {
+				  console.log('Done!')
+				})
+					self.collection(collection)
+						.replaceOne({
+							"_id": ObjectId(record._id)
+						}, {
+							$set: tosavet
+						}, function (err, docs) {
+							if (err)
+								failure(err);
+							else {
+								self.log('info', collection + "\tREPLACE\t" + JSON.stringify(record));
+								self.hook(collection, 'afterSave', record)
+									.then(function (docs) {
+										success(docs);
+									}, function (err) {
+										failure(err);
+									});
+							}
+						});
+			});
+	});
+};
+
+
+
 /**
  * [deleteRecord description]
  * @method deleteRecord
