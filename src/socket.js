@@ -50,6 +50,25 @@ var SocketServer = function (io, collection, db) {
 				});
 		});
 
+	/**
+	 * [on description]
+	 * @method on
+	 * @param  {[type]} 'replace' [description]
+	 * @param  {[type]} function (             record [description]
+	 * @return {[type]} [description]
+	 */
+	socket.on('replace', function (record, fn) {
+		db.replaceRecord(record, collection)
+			.then(function (doc) {
+				if(fn)
+					fn(doc);
+				socket.broadcast.emit('child_changed', record);
+			}, function (error) {
+				console.log('error', error);
+			});
+	});
+
+
 		/**
 		 * [on description]
 		 * @method on
