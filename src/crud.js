@@ -128,7 +128,10 @@ DB.prototype.createRecord = function (record, collection) {
 			.then(function (data) {
 				self.db.collection(collection)
 					.insert(data, function (err, doc) {
-						if (err) failure(err);
+						if (err){
+							self.log('info', collection + "\tERROR\t" + JSON.stringify(err));
+							failure(err);
+						}
 						else {
 							self.log('info', collection + "\tCREATE\t" + JSON.stringify(record));
 							self.hook(collection, 'afterSave', doc)
@@ -173,9 +176,10 @@ DB.prototype.updateRecord = function (record, collection) {
 							$set: tosave,
 							$unset: unset
 						}, function (err, docs) {
-							if (err)
+							if (err){
+								self.log('info', collection + "\tERROR\t" + JSON.stringify(err));
 								failure(err);
-							else {
+							}else {
 								self.log('info', collection + "\tUPDATE\t" + JSON.stringify(record));
 								self.hook(collection, 'afterSave', record)
 									.then(function (docs) {
@@ -225,12 +229,12 @@ DB.prototype.replaceRecord = function (record, collection) {
 
 				var bulk = self.collection(collection).initializeOrderedBulkOp();
 				bulk.find({ _id : ObjectId(record._id)}).replaceOne(record);
-				
-				
- 
+
+
+
 				bulk.execute(function (err, res) {
-				  console.log('Done!')
-				})
+				  console.log('Done!');
+				});
 					self.collection(collection)
 						.replaceOne({
 							"_id": ObjectId(record._id)
@@ -273,12 +277,16 @@ DB.prototype.deleteRecord = function (_id, collection) {
 					.remove({
 						"_id": ObjectId(_id)
 					}, function (err, doc) {
-						if (err) failure(err);
+						if (err){
+							self.log('info', collection + "\tERROR\t" + JSON.stringify(err));
+							failure(err);
+						} else {
 						self.log('info', collection + "\tDELETE\t" + _id);
 						self.hook(collection, 'afterDelete', doc)
 							.then(function (record) {
 								success(record);
 							});
+						}
 					});
 			});
 	});
