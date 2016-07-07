@@ -166,7 +166,7 @@ DB.prototype.updateRecord = function (record, collection) {
 					if(record[i] === undefined)
 						unset[i] = '';
 				}
-				delete tosave._id, unset._id;
+				delete unset._id;
 
 				if (record._id) {
 					self.collection(collection)
