@@ -154,28 +154,32 @@ DB.prototype.createRecord = function (record, collection) {
  * @return {[type]}     [description]
  */
 DB.prototype.updateRecord = function (record, collection) {
-	var self = this;
+	var self = this, saveObject = {};
 	if (this.collections.indexOf(collection) <= -1)
 		return Promise.reject(new Error('Invalid collection ' + collection));
 	return new Promise(function (success, failure) {
 		self.hook(collection, 'beforeSave', record)
 			.then(function (record) {
 				var tosave = _.clone(record);
-				var unset = { highwayTempProp : ''};
+				var unset = {};
 				for(var i in record){
 					if(record[i] === undefined)
 						unset[i] = '';
 				}
+				delete tosave._id;
 				delete unset._id;
 
 				if (record._id) {
+					if(!_.isEmpty(tosave)){
+						saveObject.$set = tosave;
+					}
+					if(!_.isEmpty(unset)){
+						saveObject.$unset = unset;
+					}
 					self.collection(collection)
 						.update({
 							"_id": ObjectId(record._id)
-						}, {
-							$set: tosave,
-							$unset: unset
-						}, function (err, docs) {
+						}, saveObject, function (err, docs) {
 							if (err){
 								self.log('info', collection + "\tERROR\t" + JSON.stringify(err));
 								failure(err);
