@@ -52,7 +52,7 @@ DB.prototype.connect = function (uri) {
 					return m.trim()
 						.toString();
 				});
-				self.log('info', 'Connected to database');
+				self.log('info', address + "\tConnected to database");
 				fulfill(self);
 			}
 		});

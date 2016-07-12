@@ -2,6 +2,7 @@ var SocketServer = function (io, collection, db) {
 	this.collection = collection;
 	this.socket = io.of('/' + db.highway.settings.database + '/' + collection);
 	this.socket.on('connection', function (socket) {
+		var address = socket.handshake.address;
 
 
 		/**
