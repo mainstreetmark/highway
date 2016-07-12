@@ -18,6 +18,7 @@ var DB = function (uri, hooks, parent) {
 		console.log(msg);
 	};
 	this.collections = [];
+	this.ip = parent ? parent.ip : '127.0.0.1';
 
 	function sanitizeURI(uri) {
 		return uri.replace('mongodb://', '');
@@ -52,7 +53,7 @@ DB.prototype.connect = function (uri) {
 					return m.trim()
 						.toString();
 				});
-				self.log('info', "\tConnected to database");
+				self.log('info', self.ip + "\tConnected to database");
 				fulfill(self);
 			}
 		});

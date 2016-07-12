@@ -38,6 +38,33 @@ var Highway = function (settings) {
 	self.socketservers = self.sockets = {};
 	self.mailer = new Email(self.settings.email);
 	self.logger = self.settings.log ? winston.log : function () {};
+	
+	
+	
+	// get the IP address of the device this is running on
+	var os = require('os');
+	var ifaces = os.networkInterfaces();
+
+	Object.keys(ifaces).forEach(function (ifname) {
+	  var alias = 0;
+
+	  ifaces[ifname].forEach(function (iface) {
+	    if ('IPv4' !== iface.family || iface.internal !== false) {
+	      // skip over internal (i.e. 127.0.0.1) and non-ipv4 addresses
+	      return;
+	    }
+
+	    if (alias >= 1) {
+	      // this single interface has multiple ipv4 addresses
+	      self.ip = iface.address;
+	    } else {
+	      // this interface has only one ipv4 adress
+	      self.ip = iface.address;
+	    }
+	    ++alias;
+	  });
+	});
+	
 
 	function PrepareHTTP() {
 		if (!self.settings.http)
