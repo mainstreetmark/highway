@@ -102,7 +102,7 @@ DB.prototype.fetchAllRecords = function (collection, options) {
 			search._id = ObjectId(search._id);
 		self.db.collection(collection)
 			.find(search)
-			.limit(limit)
+			.limit(Math.abs(limit))
 			.skip(skip, function (err, docs) {
 				if (err) failure(err);
 				else
