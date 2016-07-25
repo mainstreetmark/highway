@@ -95,14 +95,14 @@ DB.prototype.fetchAllRecords = function (collection, options) {
 		return Promise.reject('Invalid search criteria');
 	}
 	var search = options.search || {};
-	var limit = options.limit || Infinity;
+	var limit = options.limit || Number.MAX_SAFE_INTEGER;
 	var skip = options.skip || 0;
 	return new Promise(function (success, failure) {
 		if (search._id)
 			search._id = ObjectId(search._id);
 		self.db.collection(collection)
 			.find(search)
-			.limit(Math.abs(limit))
+			.limit(limit)
 			.skip(skip, function (err, docs) {
 				if (err) failure(err);
 				else
