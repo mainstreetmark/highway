@@ -98,8 +98,19 @@ DB.prototype.fetchAllRecords = function (collection, options) {
 	var limit = options.limit || Number.MAX_SAFE_INTEGER;
 	var skip = options.skip || 0;
 	return new Promise(function (success, failure) {
-		if (search._id)
-			search._id = ObjectId(search._id);
+		if (search._id){
+			switch(typeof search._id){
+				case 'object':
+					if(search._id.$in){
+						search._id.$in = search._id.$in.map(function(id){ return ObjectId(id); });
+					}
+				break;
+				default:
+					search._id = ObjectId(search._id);
+					break;
+			}
+
+		}
 		self.db.collection(collection)
 			.find(search)
 			.limit(limit)
