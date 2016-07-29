@@ -1,6 +1,6 @@
 {
   "name": "highway.server",
-  "version": "0.3.1",
+  "version": "0.3.2",
   "description": "Web sockets and HTTP access to mongo",
   "main": "highway.js",
   "scripts": {
