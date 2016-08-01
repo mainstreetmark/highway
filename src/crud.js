@@ -98,18 +98,22 @@ DB.prototype.fetchAllRecords = function (collection, options) {
 	var limit = options.limit || Number.MAX_SAFE_INTEGER;
 	var skip = options.skip || 0;
 	return new Promise(function (success, failure) {
-		if (search._id){
-			switch(typeof search._id){
-				case 'object':
-					if(search._id.$in){
-						search._id.$in = search._id.$in.map(function(id){ return ObjectId(id); });
-					}
+		if (search._id) {
+			self.log('info', collection + "\tPRESEARCH\t" + JSON.stringify(search));
+			switch (typeof search._id) {
+			case 'object':
+				if (search._id.$in) {
+					search._id.$in = search._id.$in.map(function (id) {
+						return ObjectId(id);
+					});
+				}
 				break;
-				default:
-					search._id = ObjectId(search._id);
-					break;
+			default:
+				search._id = ObjectId(search._id);
+				break;
 			}
 
+			self.log('info', collection + "\tSEARCH\t" + JSON.stringify(search));
 		}
 		self.db.collection(collection)
 			.find(search)
@@ -140,11 +144,10 @@ DB.prototype.createRecord = function (record, collection) {
 			.then(function (data) {
 				self.db.collection(collection)
 					.insert(data, function (err, doc) {
-						if (err){
+						if (err) {
 							self.log('info', collection + "\tERROR\t" + JSON.stringify(err));
 							failure(err);
-						}
-						else {
+						} else {
 							self.log('info', collection + "\tCREATE\t" + JSON.stringify(record));
 							self.hook(collection, 'afterSave', doc)
 								.then(function (record) {
@@ -166,7 +169,8 @@ DB.prototype.createRecord = function (record, collection) {
  * @return {[type]}     [description]
  */
 DB.prototype.updateRecord = function (record, collection) {
-	var self = this, saveObject = {};
+	var self = this,
+		saveObject = {};
 	if (this.collections.indexOf(collection) <= -1)
 		return Promise.reject(new Error('Invalid collection ' + collection));
 	return new Promise(function (success, failure) {
@@ -174,28 +178,28 @@ DB.prototype.updateRecord = function (record, collection) {
 			.then(function (record) {
 				var tosave = _.clone(record);
 				var unset = {};
-				for(var i in record){
-					if(record[i] === undefined)
+				for (var i in record) {
+					if (record[i] === undefined)
 						unset[i] = '';
 				}
 				delete tosave._id;
 				delete unset._id;
 
 				if (record._id) {
-					if(!_.isEmpty(tosave)){
+					if (!_.isEmpty(tosave)) {
 						saveObject.$set = tosave;
 					}
-					if(!_.isEmpty(unset)){
+					if (!_.isEmpty(unset)) {
 						saveObject.$unset = unset;
 					}
 					self.collection(collection)
 						.update({
 							"_id": ObjectId(record._id)
 						}, saveObject, function (err, docs) {
-							if (err){
+							if (err) {
 								self.log('info', collection + "\tERROR\t" + JSON.stringify(err));
 								failure(err);
-							}else {
+							} else {
 								self.log('info', collection + "\tUPDATE\t" + JSON.stringify(record));
 								self.hook(collection, 'afterSave', record)
 									.then(function (docs) {
@@ -211,7 +215,7 @@ DB.prototype.updateRecord = function (record, collection) {
 					self.collection(collection).insert(record, function (err, doc) {
 						if (err) failure(err);
 						else {
-							self.log('info', collection + "\tCREATE\t"+ JSON.stringify(doc));
+							self.log('info', collection + "\tCREATE\t" + JSON.stringify(doc));
 							self.hook(collection, 'afterSave', doc)
 								.then(function (record2) {
 									success(record2);
@@ -246,31 +250,33 @@ DB.prototype.replaceRecord = function (record, collection) {
 			.then(function (record) {
 
 				var bulk = self.collection(collection).initializeOrderedBulkOp();
-				bulk.find({ _id : ObjectId(record._id)}).replaceOne(record);
+				bulk.find({
+					_id: ObjectId(record._id)
+				}).replaceOne(record);
 
 
 
 				bulk.execute(function (err, res) {
-				  console.log('Done!');
+					console.log('Done!');
 				});
-					self.collection(collection)
-						.replaceOne({
-							"_id": ObjectId(record._id)
-						}, {
-							$set: tosavet
-						}, function (err, docs) {
-							if (err)
-								failure(err);
-							else {
-								self.log('info', collection + "\tREPLACE\t" + JSON.stringify(record));
-								self.hook(collection, 'afterSave', record)
-									.then(function (docs) {
-										success(docs);
-									}, function (err) {
-										failure(err);
-									});
-							}
-						});
+				self.collection(collection)
+					.replaceOne({
+						"_id": ObjectId(record._id)
+					}, {
+						$set: tosavet
+					}, function (err, docs) {
+						if (err)
+							failure(err);
+						else {
+							self.log('info', collection + "\tREPLACE\t" + JSON.stringify(record));
+							self.hook(collection, 'afterSave', record)
+								.then(function (docs) {
+									success(docs);
+								}, function (err) {
+									failure(err);
+								});
+						}
+					});
 			});
 	});
 };
@@ -295,15 +301,15 @@ DB.prototype.deleteRecord = function (_id, collection) {
 					.remove({
 						"_id": ObjectId(_id)
 					}, function (err, doc) {
-						if (err){
+						if (err) {
 							self.log('info', collection + "\tERROR\t" + JSON.stringify(err));
 							failure(err);
 						} else {
-						self.log('info', collection + "\tDELETE\t" + _id);
-						self.hook(collection, 'afterDelete', doc)
-							.then(function (record) {
-								success(record);
-							});
+							self.log('info', collection + "\tDELETE\t" + _id);
+							self.hook(collection, 'afterDelete', doc)
+								.then(function (record) {
+									success(record);
+								});
 						}
 					});
 			});
