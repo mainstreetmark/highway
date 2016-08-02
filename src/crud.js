@@ -203,9 +203,7 @@ DB.prototype.updateRecord = function (record, collection) {
 								self.log('info', collection + "\tUPDATE\t" + JSON.stringify(record));
 								self.hook(collection, 'afterSave', record)
 									.then(function (docs) {
-										tosave._id = record._id;
-										success(tosave);
-										//success(docs);
+										success(record);
 									}, function (err) {
 										failure(err);
 									});
