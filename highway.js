@@ -124,8 +124,17 @@ Highway.prototype.LoadRoutes = function (routes) {
 	}
 	for (var i in routes) {
 		route = routes[i];
-		this.settings.http[route.method](route.path, route.handler(this));
+		console.log(route);
+		if (!route.method || route.method.toLowerCase() !== 'get' || route.method.toLowerCase() !== 'post') {
+			console.error('Routes must have a method of either GET or POST, your route has: "' + route.method + '"');
+		} else if (typeof route.handler() !== 'function') {
+			console.error('Route handlers passed to LoadRoute must return an function');
+		} else {
+			console.log('Loaded route: ', route.path, route.method.toUpperCase());
+			this.settings.http[route.method.toUpperCase()](route.path, route.handler(this));
+		}
 	}
+	return routes;
 };
 
 Highway.prototype.SendEmail = function (to, message, options) {

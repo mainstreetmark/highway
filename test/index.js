@@ -537,18 +537,19 @@ describe('Highway', function () {
 			var hw = new Highway(config)
 				.then(function (s) {
 					s.LoadRoutes([{
-						method: 'get',
-						path: '/highway-secret',
-						handler: function (s) {
+						"method": 'get',
+						"path": '/highway-secret',
+						"handler": function (s) {
 							return function (res, req) {
 
-							}
+							};
 						}
 					}]);
 
 					done();
 				}, function (err) {
 					console.log(error);
+					done();
 				});
 		})
 
