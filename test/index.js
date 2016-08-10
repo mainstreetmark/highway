@@ -539,8 +539,10 @@ describe('Highway', function () {
 					s.LoadRoutes([{
 						method: 'get',
 						path: '/highway-secret',
-						handler: function () {
+						handler: function (s) {
+							return function (res, req) {
 
+							}
 						}
 					}]);
 
