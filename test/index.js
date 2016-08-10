@@ -81,14 +81,6 @@ describe('Database', function () {
 			expect(connection)
 				.to.be.a('object');
 		});
-		/*	it('should fail with an error', function () {
-				var d = new DB('invalidhost/highway');
-				d.connect()
-					.then(function () {}, function (err) {
-						expect(err)
-							.to.not.equal({});
-					});
-			});*/
 	});
 
 
@@ -458,7 +450,7 @@ describe('REST', function () {
 
 			request(options,
 				function (error, response, body) {
-					console.log(body);
+					//console.log(body);
 					expect(body)
 						.to.contain('Cannot POST /highway/users2');
 					done();
@@ -488,12 +480,14 @@ describe('REST', function () {
 	});
 
 	describe('read', function () {
-		it('should read records from the database and return them in JSON format', function () {
+		it('should read records from the database and return them in JSON format', function (done) {
 			this.timeout(3000000);
+
 			http.get('http://localhost:3768/highway/users/5755acc5e2b2ed6215533240', function (res) {
-				console.log(res.body);
-				/*expect(res.body)
-					.to.contain('Dave');*/
+				console.log(res);
+				expect(res)
+					.to.contain('Dave');
+				done();
 			});
 		});
 		it('should respond to search criteria provided as URL paramters');
@@ -537,6 +531,24 @@ describe('Highway', function () {
 		it('should fail with an error if it cannot create the rest server');
 		it('should fail with an error if it cannot create the socket server');
 		it('should fail if it loses its database connection');
+		it('should be able to call LoadRoute after initializing', function (done) {
+			this.timeout(20000); // long test, give it 20 seconds
+			var Highway = require('../highway.js');
+			var hw = new Highway(config)
+				.then(function (s) {
+					s.LoadRoutes([{
+						method: 'get',
+						path: '/highway-secret',
+						handler: function () {
+
+						}
+					}]);
+
+					done();
+				}, function (err) {
+					console.log(error);
+				});
+		})
 
 	});
 });
