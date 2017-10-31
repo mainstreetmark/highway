@@ -81,7 +81,7 @@ var SocketServer = function (io, collection, db) {
 			db.createRecord(record, collection)
 				.then(function (docs) {
 					fn(docs);
-					socket.emit('child_added', docs[0]);
+					socket.broadcast.emit('child_added', record);
 				});
 		});
 
