@@ -1,67 +1,67 @@
 {
-  "name": "highway.server",
-  "version": "0.3.3",
-  "description": "Web sockets and HTTP access to mongo",
-  "main": "highway.js",
-  "scripts": {
-    "test": "mocha test/index.js",
-    "coverage": "mocha --require blanket --reporter mocha-lcov-reporter | ./node_modules/coveralls/bin/coveralls.js"
-  },
-  "repository": {
-    "type": "git",
-    "url": "git+https://github.com/krewenki/highway.git"
-  },
-  "config": {
-    "blanket": {
-      "pattern": [
-        ""
-      ],
-      "data-cover-never": [
-        "node_modules",
-        "test"
-      ]
-    }
-  },
-  "keywords": [
-    "websockets",
-    "http",
-    "mongodb"
-  ],
-  "author": "Warren Krewenki",
-  "license": "ISC",
-  "bugs": {
-    "url": "https://github.com/krewenki/highway/issues"
-  },
-  "homepage": "https://github.com/krewenki/highway#readme",
-  "dependencies": {
-    "bcrypt": "^0.8.5",
-    "body-parser": "^1.15.0",
-    "connect-mongodb-session": "^1.1.1",
-    "cookie-parser": "^1.4.1",
-    "express": "^4.13.4",
-    "express-session": "^1.13.0",
-    "mongodb": "^2.1.7",
-    "mongojs": "^2.3.0",
-    "nodemailer": "^2.3.1",
-    "passport": "^0.3.2",
-    "passport-local": "^1.0.0",
-    "passport.socketio": "^3.6.1",
-    "promise": "^7.1.1",
-    "socket.io": "^1.4.5",
-    "underscore": "^1.8.3",
-    "winston": "^2.2.0"
-  },
-  "devDependencies": {
-    "blanket": "^1.1.9",
-    "chai": "^3.5.0",
-    "chai-as-promised": "^5.3.0",
-    "coveralls": "^2.11.9",
-    "expect.js": "^0.3.1",
-    "express": "^4.13.4",
-    "mocha-lcov-reporter": "^1.2.0",
-    "monitor.io": "^0.1.0",
-    "path": "^0.12.7",
-    "sinon": "^1.17.4",
-    "socket.io": "^1.4.6"
-  }
+	"name": "highway.server",
+	"version": "0.3.3",
+	"description": "Web sockets and HTTP access to mongo",
+	"main": "highway.js",
+	"scripts": {
+		"test": "mocha test/index.js",
+		"coverage": "mocha --require blanket --reporter mocha-lcov-reporter | ./node_modules/coveralls/bin/coveralls.js"
+	},
+	"repository": {
+		"type": "git",
+		"url": "git+https://github.com/mainstreetmark/highway.git"
+	},
+	"config": {
+		"blanket": {
+			"pattern": [
+				""
+			],
+			"data-cover-never": [
+				"node_modules",
+				"test"
+			]
+		}
+	},
+	"keywords": [
+		"websockets",
+		"http",
+		"mongodb"
+	],
+	"author": "Warren Krewenki",
+	"license": "ISC",
+	"bugs": {
+		"url": "https://github.com/krewenki/highway/issues"
+	},
+	"homepage": "https://github.com/krewenki/highway#readme",
+	"dependencies": {
+		"bcrypt": "^0.8.5",
+		"body-parser": "^1.15.0",
+		"connect-mongodb-session": "^1.1.1",
+		"cookie-parser": "^1.4.1",
+		"express": "^4.13.4",
+		"express-session": "^1.13.0",
+		"mongodb": "^2.1.7",
+		"mongojs": "^2.3.0",
+		"nodemailer": "^2.3.1",
+		"passport": "^0.3.2",
+		"passport-local": "^1.0.0",
+		"passport.socketio": "^3.6.1",
+		"promise": "^7.1.1",
+		"socket.io": "^1.4.5",
+		"underscore": "^1.8.3",
+		"winston": "^2.2.0"
+	},
+	"devDependencies": {
+		"blanket": "^1.1.9",
+		"chai": "^3.5.0",
+		"chai-as-promised": "^5.3.0",
+		"coveralls": "^2.11.9",
+		"expect.js": "^0.3.1",
+		"express": "^4.13.4",
+		"mocha-lcov-reporter": "^1.2.0",
+		"monitor.io": "^0.1.0",
+		"path": "^0.12.7",
+		"sinon": "^1.17.4",
+		"socket.io": "^1.4.6"
+	}
 }
