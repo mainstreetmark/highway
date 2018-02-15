@@ -125,7 +125,7 @@ Highway.prototype.LoadRoutes = function (routes) {
 	for (var i in routes) {
 		route = routes[i];
 		console.log(route);
-		if (!route.method || route.method.toLowerCase() !== 'get' || route.method.toLowerCase() !== 'post') {
+		if (!route.method || ['get','post'].indexOf(route.method.toLowerCase()==-1)) {
 			console.error('Routes must have a method of either GET or POST, your route has: "' + route.method + '"');
 		} else if (typeof route.handler() !== 'function') {
 			console.error('Route handlers passed to LoadRoute must return an function');
