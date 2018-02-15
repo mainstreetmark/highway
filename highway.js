@@ -122,13 +122,13 @@ Highway.prototype.LoadRoutes = function lr(routes) {
 
 	for (const i in routes) {
 		route = routes[i];
-		console.log(route);
+		// console.log(route);
 		if (!route.method || ['get', 'post'].indexOf(route.method.toLowerCase()) === -1) {
 			console.error(`Routes must have a method of either GET or POST, your route has: "${route.method}"`);
 		} else if (typeof route.handler() !== 'function') {
 			console.error('Route handlers passed to LoadRoute must return an function');
 		} else {
-			console.log('Loaded route: ', route.path, route.method.toUpperCase());
+			console.log('  Loaded route: ', route.path, route.method.toUpperCase());
 			this.settings.http[route.method.toLowerCase()](route.path, route.handler(this));
 		}
 	}
