@@ -128,8 +128,8 @@ Highway.prototype.LoadRoutes = function lr(routes) {
 		} else if (typeof route.handler() !== 'function') {
 			console.error('Route handlers passed to LoadRoute must return an function');
 		} else {
-			console.log('Loaded route: ', route.path, route.method.toUpperCase(), this.settings);
-			this.settings.http[route.method.toUpperCase()](route.path, route.handler(this));
+			console.log('Loaded route: ', route.path, route.method.toUpperCase());
+			this.settings.http[route.method.toLowerCase()](route.path, route.handler(this));
 		}
 	}
 	return routes;
