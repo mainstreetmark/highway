@@ -1,4 +1,4 @@
-const Highway = function (settings) {
+const Highway = function hw(settings) {
 	const ObjectId = require('mongojs')
 		.ObjectId;
 	const _ = require('underscore');
@@ -113,9 +113,9 @@ const Highway = function (settings) {
 	}));
 };
 
-Highway.prototype.LoadRoutes = function (routes) {
-	let self = this,
-		route;
+Highway.prototype.LoadRoutes = function lr(routes) {
+	const self = this;
+	let route;
 	const _ = require('underscore');
 	if (!_.isArray(routes))
 		routes = [routes];
@@ -123,12 +123,12 @@ Highway.prototype.LoadRoutes = function (routes) {
 	for (const i in routes) {
 		route = routes[i];
 		console.log(route);
-		if (!route.method || ['get', 'post'].indexOf(route.method.toLowerCase()) == -1) {
+		if (!route.method || ['get', 'post'].indexOf(route.method.toLowerCase()) === -1) {
 			console.error(`Routes must have a method of either GET or POST, your route has: "${route.method}"`);
 		} else if (typeof route.handler() !== 'function') {
 			console.error('Route handlers passed to LoadRoute must return an function');
 		} else {
-			console.log('Loaded route: ', route.path, route.method.toUpperCase());
+			console.log('Loaded route: ', route.path, route.method.toUpperCase(), this.settings);
 			this.settings.http[route.method.toUpperCase()](route.path, route.handler(this));
 		}
 	}
