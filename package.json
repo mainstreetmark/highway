@@ -34,7 +34,7 @@
 	},
 	"homepage": "https://github.com/krewenki/highway#readme",
 	"dependencies": {
-		"bcrypt": "^2.0.0",
+		"bcrypt": "^5.0.0",
 		"body-parser": "^1.15.0",
 		"connect-mongodb-session": "^1.1.1",
 		"cookie-parser": "^1.4.1",
